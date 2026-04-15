@@ -1,4 +1,5 @@
 [package]
+name = "update-cellnoor"
 edition = "2024"
 
 [dependencies]
