@@ -6,7 +6,7 @@ import {
 import { parseArgs } from "util";
 import { readConfig } from "./config";
 import * as xlsx from "xlsx";
-import { mkdirSync, readdirSync } from "fs";
+import { mkdirSync } from "fs";
 
 async function main() {
   const {
