@@ -5,7 +5,7 @@ microsoft_client_secret = "secret"
 microsoft_sharepoint_site_id = "site-id"
 
 [[workbooks]]
-file_path = "LIMS and Tracking/Tracking Sheets - In Use/People and Institutions.xlsx",
+file_path = "LIMS and Tracking/Tracking Sheets - In Use/People and Institutions.xlsx"
 sheets = [
     {name = "Institutions"},
     {name = "People", include_row_fn = "(row) => row['Full Name'] !== ' ' && row['microsoft_entra_oid'] !== 0"}
