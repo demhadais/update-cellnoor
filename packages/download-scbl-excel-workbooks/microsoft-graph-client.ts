@@ -1,7 +1,11 @@
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 import { Client } from "@microsoft/microsoft-graph-client";
-import type { Config, DataSources, readConfig } from "./config";
+import type {
+  ConfigValidator,
+  readConfig,
+  WorkbookSpecification,
+} from "./config";
 
 export function createMicrosoftGraphClient({
   tenantId,
@@ -25,26 +29,7 @@ export function createMicrosoftGraphClient({
   return Client.initWithMiddleware({ authProvider });
 }
 
-export async function downloadFiles(
-  client: Client,
-  { data_sources, microsoft_sharepoint_site_id }: Config,
-) {
-  const downloads = Object.entries(data_sources).map(
-    async ([filePath, sheetNames]) => {
-      return {
-        rawFile: await downloadFile(client, {
-          siteId: microsoft_sharepoint_site_id,
-          filePath,
-        }),
-        sheetNames,
-      };
-    },
-  );
-
-  return await Promise.all(downloads);
-}
-
-async function downloadFile(
+export async function downloadWorkbook(
   client: Client,
   { siteId, filePath }: { siteId: string; filePath: string },
 ): Promise<ReadableStream> {

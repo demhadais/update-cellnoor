@@ -1,12 +1,12 @@
 import os from "os";
 import {
   createMicrosoftGraphClient,
-  downloadFiles,
+  downloadWorkbook,
 } from "./microsoft-graph-client";
 import { parseArgs } from "util";
 import { readConfig } from "./config";
-import * as xlsx from "xlsx";
 import { mkdirSync } from "fs";
+import { exportWorkbook } from "./write-workbook";
 
 async function main() {
   const {
@@ -15,8 +15,16 @@ async function main() {
 
   const config = await readConfig(config_path);
 
-  const { microsoft_tenant_id, microsoft_client_id, microsoft_client_secret } =
-    config;
+  const {
+    microsoft_tenant_id,
+    microsoft_client_id,
+    microsoft_client_secret,
+    microsoft_sharepoint_site_id,
+    workbooks,
+  } = config;
+
+  // Do this cheap step before the expensive step of downloading the files
+  mkdirIfNotExists(output_dir);
 
   const client = createMicrosoftGraphClient({
     tenantId: microsoft_tenant_id,
@@ -24,15 +32,18 @@ async function main() {
     clientSecret: microsoft_client_secret,
   });
 
-  const rawFiles = await downloadFiles(client, config);
-  const exports = rawFiles.map((rf) => exportWorkbook(rf, output_dir));
-  try {
-    mkdirSync(output_dir);
-  } catch (error) {
-    if ((error as { code: string }).code !== "EEXIST") {
-      throw error;
-    }
-  }
+  const downloads = workbooks.map(({ file_path }) =>
+    downloadWorkbook(client, {
+      siteId: microsoft_sharepoint_site_id,
+      filePath: file_path,
+    }),
+  );
+
+  // Waiting for `Iterator.zip` to drop!
+  const rawFiles = await Promise.all(downloads);
+  const exports = rawFiles.map((rf, i) =>
+    exportWorkbook(rf, workbooks[i]!.sheets, output_dir),
+  );
 
   await Promise.all(exports);
 }
@@ -61,32 +72,14 @@ function parseCommandline() {
   return options;
 }
 
-async function exportWorkbook(
-  { rawFile, sheetNames }: { rawFile: ReadableStream; sheetNames: string[] },
-  outputDir: string,
-) {
-  const workbook = xlsx.read(await rawFile.bytes());
-
-  for (const sheetName of sheetNames) {
-    const sheet = workbook.Sheets[sheetName];
-
-    if (!sheet) {
-      throw new Error(
-        `sheet name ${sheetName} does not exist. Valid sheet names for this workbook: ${workbook.SheetNames}`,
-      );
+function mkdirIfNotExists(outputDir: string) {
+  try {
+    mkdirSync(outputDir);
+  } catch (error) {
+    if ((error as { code: string }).code !== "EEXIST") {
+      throw error;
     }
-
-    const outputPath = `${outputDir}/${sheetName}.json`;
-
-    await exportToJson(sheet, outputPath);
   }
-}
-
-async function exportToJson(sheet: xlsx.WorkSheet, outputPath: string) {
-  const converted = xlsx.utils.sheet_to_json(sheet);
-  const outputFile = Bun.file(outputPath);
-
-  await outputFile.write(JSON.stringify(converted));
 }
 
 await main();
