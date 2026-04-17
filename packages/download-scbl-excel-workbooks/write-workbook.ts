@@ -6,7 +6,7 @@ export async function exportWorkbook(
   sheetSpecifications: SheetSpecification[],
   outputDir: string,
 ) {
-  const workbook = xlsx.read(await rawFile.bytes());
+  const workbook = xlsx.read(await rawFile.bytes(), { dense: true });
 
   const exports = sheetSpecifications.map((spec) =>
     exportToJson(workbook, spec, outputDir),
@@ -17,7 +17,7 @@ export async function exportWorkbook(
 
 async function exportToJson(
   workbook: xlsx.WorkBook,
-  { name, include_row_fn }: SheetSpecification,
+  { name, header, include_row_fn }: SheetSpecification,
   outputDir: string,
 ) {
   const sheet = workbook.Sheets[name];
@@ -30,8 +30,10 @@ async function exportToJson(
 
   const outputPath = `${outputDir}/${name}.json`;
 
-  let converted: Record<string, unknown>[] = xlsx.utils.sheet_to_json(sheet);
-  console.log(converted[0]);
+  let converted: Record<string, unknown>[] = xlsx.utils.sheet_to_json(sheet, {
+    range: header,
+  });
+
   if (include_row_fn) {
     converted = converted.filter((r) => include_row_fn(r));
   }

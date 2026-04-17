@@ -2,6 +2,7 @@ import * as z from "zod";
 
 const SheetSpecification = z.object({
   name: z.string(),
+  header: z.number().default(0),
   include_row_fn: z
     .preprocess(
       eval,
