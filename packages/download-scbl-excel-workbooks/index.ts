@@ -26,12 +26,16 @@ async function main() {
 
   const rawFiles = await downloadFiles(client, config);
   const exports = rawFiles.map((rf) => exportWorkbook(rf, output_dir));
-  mkdirSync(output_dir);
+  try {
+    mkdirSync(output_dir);
+  } catch (error) {
+    if ((error as { code: string }).code !== "EEXIST") {
+      throw error;
+    }
+  }
 
   await Promise.all(exports);
 }
-
-await main();
 
 function parseCommandline() {
   const options = parseArgs({
@@ -84,3 +88,5 @@ async function exportToJson(sheet: xlsx.WorkSheet, outputPath: string) {
 
   await outputFile.write(JSON.stringify(converted));
 }
+
+await main();
