@@ -37,13 +37,13 @@ async function main() {
     downloadWorkbook(client, {
       siteId: microsoft_sharepoint_site_id,
       filePath: file_path,
-    }),
+    })
   );
 
   // Waiting for `Iterator.zip` to drop!
   const rawFiles = await Promise.all(downloads);
   const exports = rawFiles.map((rf, i) =>
-    exportWorkbook(rf, workbooks[i]!.sheets, output_dir),
+    exportWorkbook(rf, workbooks[i]!.sheets, output_dir)
   );
 
   await Promise.all(exports);
@@ -57,15 +57,14 @@ function parseCommandline() {
       config_path: {
         type: "string",
         short: "c",
-        default:
-          Bun.env.DOWNLOAD_SCBL_WORKBOOKS_CONFIG_PATH ??
+        default: Bun.env.DOWNLOAD_SCBL_WORKBOOKS_CONFIG_PATH ??
           `${os.homedir()}/.config/update-cellnoor/download-scbl-workbooks.settings.toml`,
       },
       output_dir: {
         type: "string",
         short: "o",
-        default:
-          Bun.env.DOWNLOAD_SCBL_WORKBOOKS_OUTPUT_PATH ?? `scbl-workbooks`,
+        default: Bun.env.DOWNLOAD_SCBL_WORKBOOKS_OUTPUT_PATH ??
+          `scbl-workbooks`,
       },
     },
   });

@@ -9,7 +9,7 @@ export async function exportWorkbook(
   const workbook = xlsx.read(await rawFile.bytes(), { dense: true });
 
   const exports = sheetSpecifications.map((spec) =>
-    exportToJson(workbook, spec, outputDir),
+    exportToJson(workbook, spec, outputDir)
   );
 
   await Promise.all(exports);

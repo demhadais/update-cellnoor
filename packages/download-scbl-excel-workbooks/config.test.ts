@@ -1,4 +1,4 @@
-import { test, expect } from "bun:test";
+import { expect, test } from "bun:test";
 import { ConfigValidator } from "./config.ts";
 
 const sampleConfigObj = {
