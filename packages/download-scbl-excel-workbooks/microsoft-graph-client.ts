@@ -1,11 +1,6 @@
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 import { Client } from "@microsoft/microsoft-graph-client";
-import type {
-  ConfigValidator,
-  readConfig,
-  WorkbookSpecification,
-} from "./config";
 
 export function createMicrosoftGraphClient({
   tenantId,
