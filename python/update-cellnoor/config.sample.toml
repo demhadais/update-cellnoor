@@ -1,0 +1,159 @@
+# A sample configuration that should just work with the output of ../../packages/download-scbl-excel-workbooks
+api_base_url = "https://cellnoor.jax.org/api"
+api_token = ""
+errors_dir = "errors"
+log_errors = true
+
+[assay_map."Single Cell ATAC v2"]
+name = "Epi ATAC"
+library_types = [ "chromatin_accessibility" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v2"
+chromium_chip = "H"
+
+[assay_map."Single Cell Multiome ATAC + Gene Expression v1"]
+name = "Epi Multiome ATAC + Gene Expression"
+library_types = [ "chromatin_accessibility", "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1"
+chromium_chip = "J"
+
+[assay_map."Multiplex Flex Gene Expression v1 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "flex_barcode"
+chemistry_version = "v1 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Multiplex Flex Gene Expression v2 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "flex_oligonucleotide_barcode"
+chemistry_version = "v2 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Singleplex Flex Gene Expression v1 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Singleplex Flex Gene Expression v2 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v2 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Multiplex Flex Gene Expression v1 (Next GEM)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "flex_barcode"
+chemistry_version = "v1 - Next GEM"
+chromium_chip = "Q"
+
+[assay_map."Singleplex Flex Gene Expression v1 (Next GEM)"]
+name = "Flex Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1 - Next GEM"
+chromium_chip = "Q"
+
+[assay_map."Single Cell 3' Gene Expression v4"]
+name = "Universal 3' Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X 3'"
+
+[assay_map."Single Cell 3' Gene Expression OCM v4"]
+name = "Universal 3' Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X OCM 3'"
+
+[assay_map."Single Cell 5' Gene Expression +  V(D)J v3"]
+name = "Universal 5' Gene Expression"
+library_types = [ "gene_expression", "vdj" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[assay_map."Single Cell 5' Gene Expression +  V(D)J OCM v3"]
+name = "Universal 5' Gene Expression"
+library_types = [ "gene_expression", "vdj" ]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X OCM 5'"
+
+[assay_map."Single Cell 5' Gene Expression + CRISPR Screening v3"]
+name = "Universal 5' Gene Expression"
+library_types = [ "crispr_guide_capture", "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[assay_map."Single Cell 3' Gene Expression + Cell Surface Protein v4"]
+name = "Universal 3' Gene Expression"
+library_types = [ "antibody_capture", "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X 3'"
+
+[assay_map."Single Cell 3' + Cell Surface Protein OCM v4"]
+name = "Universal 3' Gene Expression"
+library_types = [ "antibody_capture", "gene_expression" ]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X OCM 3'"
+
+[assay_map."Single Cell 5' Gene Expression v3"]
+name = "Universal 5' Gene Expression"
+library_types = [ "gene_expression" ]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[institutions]
+path = "scbl-workbooks/Institutions.json"
+
+[people]
+path = "scbl-workbooks/People.json"
+field_renaming = { "Full Name" = "name" }
+
+[projects]
+path = "scbl-workbooks/Labs.json"
+
+[specimens]
+path = "scbl-workbooks/Specimens.json"
+field_renaming = { "Specimen Name" = "name", "ID" = "readable_id", "Experimental Condition (user-defined)" = "condition", "Sample Submitting Lab" = "lab_name", "Returned By" = "returner_email" }
+
+[specimen_measurements]
+path = "scbl-workbooks/QC Measurements.json"
+field_renaming = { "Specimen ID" = "specimen_readable_id", "Date of Measurement" = "date_measured", "Acquisition Instrument" = "instrument_name" }
+
+[suspensions]
+path = "scbl-workbooks/Suspensions.json"
+field_renaming = { "Specimen ID" = "parent_specimen_readable_id", "Suspension ID" = "readable_id", "Cellular Material" = "biological_material", "Date Created from Specimen" = "date_created", "Targeted Cell Recovery" = "target_cell_recovery", "Lysis Duration (Nuclei Only) (min)" = "lysis_duration_minutes", "Fails QC" = "fails_quality_control", "Additional Filtration by SCBL Required" = "filtered_more_than_once" }
+
+[suspension_pools]
+path = "scbl-workbooks/Multiplexed Suspensions.json"
+field_renaming = { "Multiplexed Suspension (Pool) ID" = "readable_id", "Multiplexed Suspension (Pool) Name" = "name", "Date Child Suspensions Pooled" = "date_pooled" }
+
+[gems]
+path = "scbl-workbooks/GEMs.json"
+field_renaming = { "GEMs ID" = "readable_id", "Chromium Run ID" = "chromium_run_readable_id" }
+
+[gems_suspensions]
+path = "scbl-workbooks/GEMs-Suspensions.json"
+field_renaming = { "Suspension ID" = "suspension_readable_id", "Multiplexed Suspension ID" = "suspension_pool_readable_id", "GEMs ID" = "gems_readable_id", "Suspension Volume to Load (µl)" = "suspension_volume_loaded_(µl)", "Buffer Volume to Load (µl)" = "buffer_volume_loaded_(µl)" }
+
+[cdna]
+path = "scbl-workbooks/cDNA.json"
+field_renaming = {"cDNA/Pre-amplification Product ID" = "readable_id", "GEMs ID" = "gems_readable_id", "Library Type to be Built" = "library_type", "Number of Amplification Cycles" = "n_amplification_cycles", "Is Pre-amp Product" = "is_preamplification_product", "Fails QC" = "fails_quality_control", "General Notes" = "notes"}
+
+[libraries]
+path = "scbl-workbooks/Libraries.json"
+field_renaming = {"Pre-amplified/cDNA ID" = "cdna_readable_id", "Library ID" = "readable_id", "Number of SI PCR Cycles" = "number_of_sample_index_pcr_cycles", "Library Volume (µl)" = "volume_µl", "Fails QC" = "fails_quality_control", "General Notes" = "notes" }

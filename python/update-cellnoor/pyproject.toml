@@ -1,6 +1,14 @@
 [project]
 name = "update-cellnoor"
+version = "0.1.0"
 description = "An app that reads JSON files (representing sample-tracking sheets at the SCBL) and converts them into API requests for cellnoor"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "aiohttp>=3.13.5",
+    "pydantic>=2.13.3",
+    "pydantic-settings>=2.14.0",
+]
+
+[tool.basedpyright]
+reportExplicitAny = false
