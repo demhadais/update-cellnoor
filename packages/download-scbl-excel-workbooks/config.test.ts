@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { ConfigValidator } from "./config.ts";
+import sampleConfigToml from "./config.sample.toml";
 
 const sampleConfigObj = {
   microsoft_tenant_id: "tenant",
@@ -15,8 +16,8 @@ const sampleConfigObj = {
         {
           name: "People",
           header: 0,
-          include_row_fn:
-            "(row) => row['Full Name'] !== ' ' && row['microsoft_entra_oid'] !== 0",
+          exclude_row_fn:
+            "(row) => row['Full Name'] === ' ' || row['microsoft_entra_oid'] === '0'",
         },
       ],
     },
@@ -24,12 +25,13 @@ const sampleConfigObj = {
 };
 
 test("config parsing", () => {
-  expect(sampleConfigObj).toStrictEqual(sampleConfigObj);
+  expect(sampleConfigToml).toStrictEqual(sampleConfigObj);
 });
 
 test("config validation", () => {
   const validatedConfig = ConfigValidator.parse(sampleConfigObj);
-  const includeRow = validatedConfig.workbooks[0]!.sheets[1]!.include_row_fn!;
+  const excludeRow = validatedConfig.workbooks[0]!.sheets[1]!
+    .exclude_row_fn!;
 
-  expect(includeRow({ "Full Name": " " })).toBeFalse();
+  expect(excludeRow({ "Full Name": " " })).toBeTrue();
 });

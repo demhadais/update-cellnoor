@@ -20,7 +20,7 @@ export async function exportWorkbook(
 
 async function exportToJson(
   workbook: xlsx.WorkBook,
-  { name, header, include_row_fn }: SheetSpecification,
+  { name, header, exclude_row_fn }: SheetSpecification,
   outputDir: string,
 ) {
   const sheet = workbook.Sheets[name];
@@ -35,8 +35,8 @@ async function exportToJson(
     range: header,
   });
 
-  if (include_row_fn) {
-    converted = converted.filter((r) => include_row_fn(r));
+  if (exclude_row_fn) {
+    converted = converted.filter((r) => !exclude_row_fn(r));
   }
 
   const outputPath = `${outputDir}/${name}.json`;
