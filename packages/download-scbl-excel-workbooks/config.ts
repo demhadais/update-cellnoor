@@ -12,6 +12,7 @@ const SheetSpecification = z.object({
       }),
     )
     .optional(),
+  date_columns: z.array(z.string()).optional(),
 });
 
 const WorkbookSpecification = z.object({
