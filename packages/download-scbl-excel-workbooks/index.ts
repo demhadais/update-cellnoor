@@ -6,7 +6,7 @@ import {
 import { parseArgs } from "util";
 import { readConfig } from "./config.ts";
 import { mkdirSync } from "fs";
-import { exportWorkbook } from "./write-workbook.ts";
+import { exportWorkbook } from "./export-workbook.ts";
 
 async function main() {
   const {

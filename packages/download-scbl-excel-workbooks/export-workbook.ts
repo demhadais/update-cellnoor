@@ -40,6 +40,5 @@ async function exportToJson(
   }
 
   const outputPath = `${outputDir}/${name}.json`;
-
   await Bun.file(outputPath).write(JSON.stringify(converted));
 }
