@@ -1,4 +1,4 @@
-import type { SheetSpecification, WorkbookSpecification } from "./config";
+import type { SheetSpecification } from "./config.ts";
 import * as xlsx from "xlsx";
 
 export async function exportWorkbook(

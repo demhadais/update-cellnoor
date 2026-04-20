@@ -1,6 +1,5 @@
 import { test, expect } from "bun:test";
-import sampleConfigFile from "./config.sample.toml";
-import { ConfigValidator, readConfig } from "./config";
+import { ConfigValidator } from "./config.ts";
 
 const sampleConfigObj = {
   microsoft_tenant_id: "tenant",

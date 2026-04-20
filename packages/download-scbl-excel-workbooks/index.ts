@@ -3,11 +3,11 @@ import os from "os";
 import {
   createMicrosoftGraphClient,
   downloadWorkbook,
-} from "./microsoft-graph-client";
+} from "./microsoft-graph-client.ts";
 import { parseArgs } from "util";
-import { readConfig } from "./config";
+import { readConfig } from "./config.ts";
 import { mkdirSync } from "fs";
-import { exportWorkbook } from "./write-workbook";
+import { exportWorkbook } from "./write-workbook.ts";
 
 async function main() {
   const {

@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install bun
-        run: oven-sh/bun@v2
+        uses: oven-sh/bun@v2
 
       - name: Test
         working-directory: packages/download-scbl-excel-workbooks
