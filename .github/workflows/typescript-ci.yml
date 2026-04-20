@@ -36,4 +36,4 @@ jobs:
 
       - name: Test
         working-directory: packages/download-scbl-excel-workbooks
-        run: bun test
+        run: bun install && bun test
