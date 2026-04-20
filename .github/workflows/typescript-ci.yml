@@ -11,11 +11,11 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout
+        uses: actions/checkout@v6
 
       # Use Deno because it has built-in linting and formatting
       - name: Install Deno
-        uses: denoland/setup-deno
+        uses: denoland/setup-deno@v2
 
       - name: Lint
         working-directory: packages/download-scbl-excel-workbooks
@@ -29,10 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout
+        uses: actions/checkout@v6
 
       - name: Install bun
-        run: oven-sh/bun
+        run: oven-sh/bun@v2
 
       - name: Test
         working-directory: packages/download-scbl-excel-workbooks

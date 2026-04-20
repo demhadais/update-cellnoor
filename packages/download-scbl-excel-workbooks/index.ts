@@ -1,3 +1,4 @@
+// A comment to trigger CI
 import os from "os";
 import {
   createMicrosoftGraphClient,
