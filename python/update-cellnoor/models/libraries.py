@@ -24,27 +24,21 @@ def _parse_row(
     data["cdna_id"] = cdna.get(row["cdna_readable_id"], uuid.uuid4())
 
     data["preparer_ids"] = [
-        people[row[k]]
-        for k in ["preparer_1_email", "preparer_2_email"]
-        if row[k] is not None
+        people[row[k]] for k in ["preparer_1_email", "preparer_2_email"] if k in row
     ]
 
     if not data["preparer_ids"]:
         data["preparer_ids"] = [people["ahmed.said@jax.org"]]
 
     # These spreadsheets are absolutely infernal
-    try:
-        data["number_of_sample_index_pcr_cycles"] = int(
-            str_to_float(row["number_of_sample_index_pcr_cycles"])
-        )
-        data["volume_µl"] = int(str_to_float(row["volume_µl"]))
-        data["target_reads_per_cell"] = (
-            int(str_to_float(row["target_reads_per_cell_(k)"])) * 1000
-        )
-    except AttributeError:
-        pass
+    data["number_of_sample_index_pcr_cycles"] = int(
+        str_to_float(row["number_of_sample_index_pcr_cycles"])
+    )
+    data["volume_µl"] = int(str_to_float(row["volume_µl"]))
+    if target_reads_per_cell := data.get("target_reads_per_cell"):
+        data["target_reads_per_cell"] = int(str_to_float(target_reads_per_cell)) * 1000
 
-    if prepared_at := data.get("prepared_at"):
+    if prepared_at := row.get("date_prepared"):
         data["prepared_at"] = prepared_at
 
     index_set_name = row["full_index_set_name"]
@@ -58,7 +52,7 @@ def _parse_row(
         additional_data[key] = str_to_bool(row[key])
 
     for key in ["failure_notes", "notes"]:
-        if row[key] is not None:
+        if row.get(key) is not None:
             additional_data[key] = row[key]
 
     data["additional_data"] = additional_data

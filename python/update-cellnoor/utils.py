@@ -17,7 +17,7 @@ def to_snake_case(s: str):
     return s.lower().replace(" ", "_")
 
 
-def str_to_float(s: str) -> float:
+def str_to_float(s: str | int | float) -> float:
     if isinstance(s, float):
         return s
     if isinstance(s, int):
@@ -35,7 +35,10 @@ def str_to_int(s: str) -> int:
     return int(str_to_float(s))
 
 
-def str_to_bool(s: str) -> bool | None:
+def str_to_bool(s: str | bool) -> bool | None:
+    if isinstance(s, bool):
+        return s
+
     return {"TRUE": True, "FALSE": False}.get(s)
 
 

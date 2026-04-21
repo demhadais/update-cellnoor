@@ -1,14 +1,15 @@
 import asyncio
-import itertools
 import json
+import multiprocessing
+import os
 import re
+from compression import zstd
+from compression.zstd import CompressionParameter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import aiohttp
-from compression import zstd
-from compression.zstd import CompressionParameter
 
 from copy_chromium_datasets import (
     get_cellranger_output_files,
@@ -67,30 +68,25 @@ _ZSTD_OPTIONS = {
     CompressionParameter.compression_level: 22,
     # 2^22 = roughly 4MB. Browsers seem to hate anything over 8 MB for the window size, so we'll just do a power-of-two less than that :)
     CompressionParameter.window_log: 22,
+    CompressionParameter.nb_workers: os.process_cpu_count(),
 }
 
 
-async def _upload_files_for_one_dataset(
-    client: aiohttp.ClientSession,
-    chromium_datasets_url: str,
-    dataset_id: str,
-    path: Path,
-    error_dir: Path,
-):
+def _construct_multipart_form(dataset_id_and_path: tuple[str, Path]):
+    dataset_id, path = dataset_id_and_path
     dataset_fileset = get_cellranger_output_files(path)
 
-    def _read_and_compress():
-        return [
-            (
-                filename,
-                zstd.compress(path.read_bytes(), options=_ZSTD_OPTIONS),  # pyright: ignore[reportArgumentType]
-            )
-            if filename.endswith(".html")
-            else (filename, path.read_bytes())
-            for filename, path in dataset_fileset.files
-        ]
+    files = [
+        (
+            filename,
+            zstd.compress(path.read_bytes(), options=_ZSTD_OPTIONS),  # pyright: ignore[reportArgumentType]
+        )
+        if filename.endswith(".html")
+        else (filename, path.read_bytes())
+        for filename, path in dataset_fileset.files
+    ]
+    print(f"finished compression for {dataset_id}")
 
-    files = await asyncio.to_thread(_read_and_compress)
     # NEVER CHANGE THE FOLLOWING CODE. Trying to do this using aiohttp's other facilities doesn't work :)
     file_uploads = aiohttp.FormData(quote_fields=False, default_to_multipart=True)
     for filename, file_content in files:
@@ -101,6 +97,16 @@ async def _upload_files_for_one_dataset(
             filename=filename,
         )
 
+    return (dataset_id, file_uploads)
+
+
+async def _upload_files_for_one_dataset(
+    client: aiohttp.ClientSession,
+    chromium_datasets_url: str,
+    dataset_id: str,
+    file_uploads: aiohttp.FormData,
+    error_dir: Path,
+):
     response = await client.post(
         f"{chromium_datasets_url}/{dataset_id}/raw-files",
         data=file_uploads,
@@ -112,7 +118,7 @@ async def _upload_files_for_one_dataset(
             request={
                 "action": "uploaded files",
                 "name": dataset_id,
-                "file_paths": [fname for fname, _ in dataset_fileset.files],
+                "file_paths": "this is too much effort to get right now",
             },
             response=response,
             error_dir=error_dir,
@@ -125,31 +131,39 @@ async def upload_dataset_files(
     dataset_dirs: list[Path],
     errors_dir: Path,
 ):
+    print("beginning dataset file upload")
     response = await client.get(chromium_datasets_url, params=NO_LIMIT_QUERY)
-    pre_existing_datasets = await response.json()
+    pre_existing_datasets: list[dict[str, Any]] = await response.json()
     dataset_dir_map = {d.name: d for d in dataset_dirs}
 
-    # The server can really only handle 4 at a time (I wrote the server)
-    for dataset_batch in itertools.batched(pre_existing_datasets, 4):
-        tasks = []
-        async with asyncio.TaskGroup() as tg:
-            for dataset in dataset_batch:
-                # We can just skip datasets with files
-                if dataset["links"]["raw_files"]:
-                    continue
+    datasets_for_which_to_upload_files: list[tuple[str, Path]] = []
+    for dataset_from_api in pre_existing_datasets:
+        if dataset_from_api["links"]["raw_files"]:
+            continue
+        dataset_dir = dataset_dir_map[dataset_from_api["name"]]
+        datasets_for_which_to_upload_files.append((dataset_from_api["id"], dataset_dir))
+    print(f"uploading files for {len(datasets_for_which_to_upload_files)} datasets")
 
-                dataset_dir = dataset_dir_map[dataset["name"]]
+    # First, compress everything in parallel
+    print("beginning compression")
+    with multiprocessing.Pool() as pool:
+        dataset_file_uploads = pool.map(
+            _construct_multipart_form,
+            datasets_for_which_to_upload_files,
+        )
+    print("finished compression")
 
-                task = tg.create_task(
-                    _upload_files_for_one_dataset(
-                        client,
-                        chromium_datasets_url=chromium_datasets_url,
-                        dataset_id=dataset["id"],
-                        path=dataset_dir,
-                        error_dir=errors_dir,
-                    )
+    async with asyncio.TaskGroup() as tg:
+        for dataset_id, file_upload in dataset_file_uploads:
+            _ = tg.create_task(
+                _upload_files_for_one_dataset(
+                    client,
+                    chromium_datasets_url=chromium_datasets_url,
+                    dataset_id=dataset_id,
+                    file_uploads=file_upload,
+                    error_dir=errors_dir,
                 )
-                tasks.append(task)
+            )
 
 
 async def post_chromium_datasets(
@@ -171,15 +185,13 @@ async def post_chromium_datasets(
     pre_existing_datasets = await pre_existing_datasets.result().json()
     pre_existing_datasets = property_id_map("name", pre_existing_datasets)
 
-    tasks = []
     async with asyncio.TaskGroup() as tg:
         for path in dataset_dirs:
             if path.name in pre_existing_datasets:
                 continue
 
-            task = tg.create_task(
+            _ = tg.create_task(
                 _post_dataset(
                     client, chromium_datasets_url, path, libraries, errors_dir
                 )
             )
-            tasks.append(task)

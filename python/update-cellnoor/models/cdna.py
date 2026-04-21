@@ -32,34 +32,30 @@ def _parse_row(
     data["preparer_ids"] = [
         people[row[key]]
         for key in ["preparer_email", "preparer_2"]
-        if row[key] is not None
+        if key in row and row[key] is not None
     ]
 
-    data["gem_pool_id"] = gem_pools.get(row["gems_readable_id"], uuid.uuid7())
+    data["gem_pool_id"] = gem_pools.get(row["gems_readable_id"])
 
-    try:
-        data["n_amplification_cycles"] = int(
-            str_to_float(row["n_amplification_cycles"])
-        )
-    except AttributeError:
-        if row["n_amplification_cycles"] is None:
-            data["n_amplification_cycles"] = 0
+    if n_amplification_cycles := row.get("n_amplification_cycles"):
+        data["n_amplification_cycles"] = int(str_to_float(n_amplification_cycles))
+    else:
+        data["n_amplification_cycles"] = 0
 
-    try:
-        data["volume_µl"] = int(str_to_float(row["volume_(µl)"]))
-    except AttributeError:
-        pass
+    if volume := row.get("volume_(µl)"):
+        data["volume_µl"] = int(str_to_float(volume))
 
     if prepared_at := row.get("date_prepared"):
-        row["prepared_at"] = prepared_at
+        data["prepared_at"] = prepared_at
 
     additional_data = {}
     for key in ["experiment_id", "failure_notes", "storage_location", "notes"]:
-        if value := row[key]:
+        if value := row.get(key):
             additional_data[key] = value
 
     for key in ["is_preamplification_product", "fails_quality_control"]:
-        additional_data[key] = str_to_bool(row[key])
+        if key in row:
+            additional_data[key] = row[key]
 
     data["additional_data"] = additional_data
 

@@ -28,36 +28,29 @@ def _parse_gem_pools(
     for loading in loadings:
         parsed_loading = {}
         if suspension_readable_id := loading.get("suspension_readable_id"):
-            parsed_loading["suspension_id"] = suspensions.get(
-                suspension_readable_id, uuid.uuid4()
-            )
+            parsed_loading["suspension_id"] = suspensions.get(suspension_readable_id)
         elif suspension_pool_readable_id := loading.get("suspension_pool_readable_id"):
             parsed_loading["suspension_pool_id"] = suspension_pools.get(
-                suspension_pool_readable_id, uuid.uuid4()
+                suspension_pool_readable_id
             )
 
-        try:
+        if suspension_volume_loaded := loading.get("suspension_volume_loaded_(µl)"):
             parsed_loading["suspension_volume_loaded"] = {
-                "value": str_to_float(loading["suspension_volume_loaded_(µl)"]),
+                "value": str_to_float(suspension_volume_loaded),
                 "unit": "microliter",
             }
-        except AttributeError:
-            parsed_loading["suspension_volume_loaded"] = {
-                "value": 0,
-                "unit": "microliter",
-            }
-        except ValueError:
+        else:
             parsed_loading["suspension_volume_loaded"] = {
                 "value": 0,
                 "unit": "microliter",
             }
 
-        try:
+        if buffer_volume_loaded := parsed_loading.get("buffer_volume_loaded"):
             parsed_loading["buffer_volume_loaded"] = {
-                "value": str_to_float(loading["buffer_volume_loaded_(µl)"]),
+                "value": str_to_float(buffer_volume_loaded),
                 "unit": "microliter",
             }
-        except AttributeError:
+        else:
             parsed_loading["buffer_volume_loaded"] = {"value": 0, "unit": "microliter"}
 
         # This is thoroughly shit

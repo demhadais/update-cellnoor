@@ -53,7 +53,7 @@ const sampleConfigObj = {
         {
           name: "GEMs",
           exclude_row_fn:
-            "(row) => !row['Chromium Run ID'] || new Set(['G0072', 'G0073']).has(row['ID'])",
+            "(row) => !row['Chromium Run ID'] || new Set(['G0072', 'G0073']).has(row['GEMs ID'])",
         },
         {
           name: "GEMs-Suspensions",
@@ -62,12 +62,12 @@ const sampleConfigObj = {
         {
           name: "cDNA",
           exclude_row_fn:
-            "(row) => !row['GEMs ID'] || new Set(['25E28-C1', '25E28-C2', '25E103-C3', '25E103-C4']).has(row['ID'])",
+            "(row) => !row['GEMs ID'] || new Set(['25E28-C1', '25E28-C2', '25E103-C3', '25E103-C4']).has(row['cDNA/Pre-amplification Product ID'])",
         },
         {
           name: "Libraries",
           exclude_row_fn:
-            "(row) => !row['Pre-amplified/cDNA ID'] || new Set(['25E28-L1', '25E28-L2']).has(row['ID'])",
+            "(row) => !row['Pre-amplified/cDNA ID'] || new Set(['25E28-L1', '25E28-L2']).has(row['Library ID'])",
         },
       ],
     },

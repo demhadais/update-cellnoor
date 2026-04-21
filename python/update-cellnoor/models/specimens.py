@@ -27,7 +27,8 @@ def _parse_row(
     people: dict[str, str],
 ) -> dict[str, Any] | None:
     data = {
-        simple_key: row[simple_key] for simple_key in ["name", "readable_id", "tissue"]
+        simple_key: str(row[simple_key])
+        for simple_key in ["name", "readable_id", "tissue"]
     }
 
     data["project_id"] = projects.get(row["lab_name"], str(uuid.uuid7()))
