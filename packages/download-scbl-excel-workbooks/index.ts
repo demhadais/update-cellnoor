@@ -56,13 +56,13 @@ function parseCommandline() {
       config_path: {
         type: "string",
         short: "c",
-        default: Bun.env.DOWNLOAD_SCBL_WORKBOOKS_CONFIG_PATH ??
-          `${os.homedir()}/.config/update-cellnoor/download-scbl-workbooks.settings.toml`,
+        default: Bun.env.DOWNLOAD_SCBL_EXCEL_WORKBOOKS_CONFIG_PATH ??
+          `${os.homedir()}/.config/update-cellnoor/download-scbl-excel-workbooks.toml`,
       },
       output_dir: {
         type: "string",
         short: "o",
-        default: Bun.env.DOWNLOAD_SCBL_WORKBOOKS_OUTPUT_PATH ??
+        default: Bun.env.DOWNLOAD_SCBL_EXCEL_WORKBOOKS_OUTPUT_PATH ??
           `scbl-workbooks`,
       },
     },

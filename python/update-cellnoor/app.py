@@ -351,7 +351,7 @@ class Settings(BaseSettings):
     )
 
     config_path: Path = (
-        Path.home() / ".config" / UPDATE_CELLNOOR / "update-cellnoor.settings.toml"
+        Path.home() / ".config" / UPDATE_CELLNOOR / f"{UPDATE_CELLNOOR}.toml"
     )
     api_base_url: str
     api_token: str
