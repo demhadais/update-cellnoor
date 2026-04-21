@@ -21,5 +21,7 @@ jobs:
           bun build --compile --minify --sourcemap --bytecode --format esm index.ts --outfile download-scbl-excel-workbooks
 
       - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
         working-directory: packages/download-scbl-excel-workbooks
         run: gh release create download-scbl-excel-workbooks-latest download-scbl-excel-workbooks
