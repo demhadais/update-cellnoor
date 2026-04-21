@@ -1,0 +1,23 @@
+name: Build download-scbl-excel-workbooks
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Build
+        working-directory: packages/download-scbl-excel-workbooks
+        run: bun build --compile --minify --sourcemap --bytecode --format esm index.ts --outfile download-scbl-excel-workbooks
+
+      - name: Release
+        working-directory: packages/download-scbl-excel-workbooks
+        run: gh release create download-scbl-excel-workbooks-latest download-scbl-excel-workbooks

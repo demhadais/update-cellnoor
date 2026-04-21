@@ -1,1 +1,12 @@
+# Default directory to which `download-scbl-excel-workbooks` downloads files
 scbl-workbooks
+
+# Compiled outputs of the above program
+*.bun-build
+# Default compiled artifact name
+index
+*.map
+# Renamed version (as found in workflow)
+download-scbl-excel-workbooks
+# Reinclude the actual source-code
+!download-scbl-excel-workbooks/
