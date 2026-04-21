@@ -1,2 +1,2 @@
-# rust-template
-A template for every new Rust project with strong defaults for [Clippy](https://github.com/rust-lang/rust-clippy) and [rustfmt](https://github.com/rust-lang/rustfmt), pre-configured CI/CD, a GitHub rule-set, and dependabot.
+# update-cellnoor
+A pipeline that downloads experiment-tracking Excel workbooks at the Single Cell Biology Laboratory at the Jackson Laboratory, transforms them into API requests, and sends them along with the results of data processing to [the cellnoor RESTful API](https://cellnoor.jax.org/api).

@@ -1,0 +1,39 @@
+name: Check TypeScript Code
+on:
+  push:
+    paths:
+      - "**/*.ts"
+      - "**/package.json"
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      # Use Deno because it has built-in linting and formatting
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+
+      - name: Lint
+        working-directory: packages/download-scbl-excel-workbooks
+        run: deno lint
+
+      - name: Format
+        working-directory: packages/download-scbl-excel-workbooks
+        run: deno fmt --check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Test
+        working-directory: packages/download-scbl-excel-workbooks
+        run: bun install && bun test
