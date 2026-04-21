@@ -26,4 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: packages/download-scbl-excel-workbooks
-        run: gh release create download-scbl-excel-workbooks-latest download-scbl-excel-workbooks
+        run: |
+          version=$(jq -r '.version' package.json)
+          gh release create download-scbl-excel-workbooks-$version download-scbl-excel-workbooks
