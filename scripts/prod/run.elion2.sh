@@ -10,4 +10,6 @@ chmod u+x download-scbl-excel-workbooks
 cd /sc/service/tmp
 git clone https://github.com/demhadais/update-cellnoor
 cd update-cellnoor/python
-uv run main.py --config-path /sc/service/.config/update-cellnoor/update-cellnoor.toml /sc/service/delivery/*/*/2*
+
+# The only complexity here is that the API token is associated with a user, not a "service". We're expecting that user to supply their API token through environment variables
+uv run main.py --config-path /sc/service/.config/update-cellnoor/update-cellnoor.toml --api-token $CELLNOOR_API_TOKEN /sc/service/delivery/*/*/2*
