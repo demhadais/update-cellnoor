@@ -50,7 +50,7 @@ class CellrangerOutputFiles:
             *self._web_summaries,
         ]
 
-        ret = []
+        ret: list[tuple[str, Path]] = []
 
         for f in files:
             if not f.exists():
@@ -161,23 +161,23 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
         destination_directory / source_cellranger_directory.name / "_files"
     )
     destination_files_directory.mkdir(exist_ok=True, parents=True)
-    shutil.copyfile(
+    _ = shutil.copyfile(
         get_cmdline_file(source_dataset_directory),
         destination_files_directory / "_cmdline",
     )
 
     source_pipeline_metadata = get_pipeline_metadata_file(source_dataset_directory)
-    shutil.copyfile(
+    _ = shutil.copyfile(
         source_pipeline_metadata, destination_directory / source_pipeline_metadata.name
     )
 
     fileset = get_cellranger_output_files(source_dataset_directory)
     for source_file in [
-        *fileset._metrics,
-        fileset._qc_library_metrics,
-        fileset._qc_report,
-        fileset._qc_sample_metrics,
-        *fileset._web_summaries,
+        *fileset._metrics,  # pyright: ignore[reportPrivateUsage]
+        fileset._qc_library_metrics,  # pyright: ignore[reportPrivateUsage]
+        fileset._qc_report,  # pyright: ignore[reportPrivateUsage]
+        fileset._qc_sample_metrics,  # pyright: ignore[reportPrivateUsage]
+        *fileset._web_summaries,  # pyright: ignore[reportPrivateUsage]
     ]:
         if not source_file.exists():
             continue
@@ -189,7 +189,7 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
         )
 
         destination_file.parent.mkdir(exist_ok=True, parents=True)
-        shutil.copyfile(source_file, destination_file)
+        _ = shutil.copyfile(source_file, destination_file)
 
 
 def main():
