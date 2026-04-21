@@ -68,7 +68,7 @@ _ZSTD_OPTIONS = {
     CompressionParameter.compression_level: 22,
     # 2^22 = roughly 4MB. Browsers seem to hate anything over 8 MB for the window size, so we'll just do a power-of-two less than that :)
     CompressionParameter.window_log: 22,
-    CompressionParameter.nb_workers: os.process_cpu_count(),
+    CompressionParameter.nb_workers: 0,
 }
 
 
@@ -131,7 +131,6 @@ async def upload_dataset_files(
     dataset_dirs: list[Path],
     errors_dir: Path,
 ):
-    print("beginning dataset file upload")
     response = await client.get(chromium_datasets_url, params=NO_LIMIT_QUERY)
     pre_existing_datasets: list[dict[str, Any]] = await response.json()
     dataset_dir_map = {d.name: d for d in dataset_dirs}
@@ -142,16 +141,13 @@ async def upload_dataset_files(
             continue
         dataset_dir = dataset_dir_map[dataset_from_api["name"]]
         datasets_for_which_to_upload_files.append((dataset_from_api["id"], dataset_dir))
-    print(f"uploading files for {len(datasets_for_which_to_upload_files)} datasets")
 
     # First, compress everything in parallel
-    print("beginning compression")
     with multiprocessing.Pool() as pool:
         dataset_file_uploads = pool.map(
             _construct_multipart_form,
             datasets_for_which_to_upload_files,
         )
-    print("finished compression")
 
     async with asyncio.TaskGroup() as tg:
         for dataset_id, file_upload in dataset_file_uploads:
