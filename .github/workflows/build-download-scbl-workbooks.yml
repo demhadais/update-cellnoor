@@ -1,4 +1,6 @@
 name: Build download-scbl-excel-workbooks
+permissions:
+  contents: write
 on:
   push:
     branches:
