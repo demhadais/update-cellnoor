@@ -172,6 +172,9 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
     )
 
     fileset = get_cellranger_output_files(source_dataset_directory)
+    destination_cellranger_directory = (
+        destination_directory / source_cellranger_directory.name
+    )
     for source_file in [
         *fileset._metrics,  # pyright: ignore[reportPrivateUsage]
         fileset._qc_library_metrics,  # pyright: ignore[reportPrivateUsage]
@@ -185,7 +188,7 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
         destination_file = _destination_file_path(
             source_dataset_directory=source_dataset_directory,
             source_file=source_file,
-            destination_directory=destination_directory,
+            destination_directory=destination_cellranger_directory,
         )
 
         destination_file.parent.mkdir(exist_ok=True, parents=True)
