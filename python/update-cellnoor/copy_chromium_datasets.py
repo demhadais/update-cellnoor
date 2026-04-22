@@ -139,7 +139,7 @@ def _destination_file_path(
             / source_file.name
         )
     else:
-        return destination_directory / cellranger_directory.name / source_file.name
+        return destination_directory / source_file.name
 
 
 def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
