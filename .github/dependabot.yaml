@@ -1,10 +1,27 @@
 version: 2
 updates:
   - package-ecosystem: cargo
-    directory: .
+    directory: crates/update-cellnoor
     schedule:
       interval: daily
     groups:
       all-rust-dependencies:
+        patterns:
+          - "*"
+  - package-ecosystem: bun
+    directory: packages/download-scbl-excel-workbooks
+    schedule:
+      interval: daily
+    groups:
+      all-typescript-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: pip
+    directory: python/update-cellnoor
+    schedule:
+      interval: daily
+    groups:
+      all-python-dependencies:
         patterns:
           - "*"
