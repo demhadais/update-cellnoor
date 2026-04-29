@@ -108,7 +108,7 @@ def _get_files_from_cellranger_directory(
 
     return CellrangerOutputFiles(
         _qc_library_metrics=cellranger_directory / "qc_library_metrics.csv",
-        _qc_report=cellranger_directory / "qc_report.csv",
+        _qc_report=cellranger_directory / "qc_report.html",
         _qc_sample_metrics=cellranger_directory / "qc_sample_metrics.csv",
         _metrics=[
             cellranger_directory / METRICS_SUMMARY_FILENAMES[cellranger_directory.name]
@@ -126,13 +126,8 @@ def get_cellranger_output_files(
     return _get_files_from_cellranger_directory(dataset_directory)
 
 
-def _destination_file_path(
-    source_dataset_directory: Path, source_file: Path, destination_directory: Path
-) -> Path:
-    cellranger_directory = _get_cellranger_directory(source_dataset_directory)
-
-    per_sample_outs = cellranger_directory / "per_sample_outs"
-    if per_sample_outs.exists():
+def _destination_file_path(source_file: Path, destination_directory: Path) -> Path:
+    if "per_sample_outs" in source_file.parts:
         return (
             destination_directory
             / "per_sample_outs"
@@ -187,7 +182,6 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
             continue
 
         destination_file = _destination_file_path(
-            source_dataset_directory=source_dataset_directory,
             source_file=source_file,
             destination_directory=destination_cellranger_directory,
         )

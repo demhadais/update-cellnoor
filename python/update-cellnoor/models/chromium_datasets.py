@@ -85,7 +85,6 @@ def _construct_multipart_form(dataset_id_and_path: tuple[str, Path]):
         else (filename, path.read_bytes())
         for filename, path in dataset_fileset.files
     ]
-    print(f"finished compression for {dataset_id}")
 
     # NEVER CHANGE THE FOLLOWING CODE. Trying to do this using aiohttp's other facilities doesn't work :)
     file_uploads = aiohttp.FormData(quote_fields=False, default_to_multipart=True)
