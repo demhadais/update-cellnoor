@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "packages/download-scbl-excelworkbooks/**"
+      - "packages/download-scbl-excel-workbooks/**"
 
 jobs:
   build:
