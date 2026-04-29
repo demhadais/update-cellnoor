@@ -120,7 +120,7 @@ async def get_person_email_id_map(
     async with client.get(people_url, params=NO_LIMIT_QUERY) as resp:
         people = await resp.json()
     people = property_id_map("email", people)
-    people = people | {email.lower(): id for email, id in people.items()}
+    people = people | {email.lower(): id for email, id in people.items() if email}
 
     return people
 
