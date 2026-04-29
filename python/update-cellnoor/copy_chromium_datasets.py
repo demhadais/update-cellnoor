@@ -11,6 +11,7 @@ METRICS_SUMMARY_FILENAMES = {
     "cellranger-multi-hto": "metrics_summary.csv",
     "cellranger-multi-ocm": "metrics_summary.csv",
     "cellranger-multi-vdj": "metrics_summary.csv",
+    "cellranger-multi-flex": "metrics_summary.csv",
     "cellranger-vdj": "metrics_summary.csv",
 }
 
