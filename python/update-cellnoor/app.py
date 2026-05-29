@@ -170,29 +170,29 @@ async def _update_cellnoor_api_inner(
     def specimen_measurement_url_creator(specimen_id: str):
         return f"{specimen_url}/{specimen_id}/measurements"
 
-    if specimen_measurements := settings.specimen_measurements:
-        data = read_json_file(specimen_measurements)
-        new_specimen_measurements = await csv_to_new_specimen_measurements(
-            client,
-            specimen_url=specimen_url,
-            people_url=people_url,
-            specimen_measurement_url_creator=specimen_measurement_url_creator,
-            data=data,
-        )
-        new_specimen_measurements = list(new_specimen_measurements)
+    # if specimen_measurements := settings.specimen_measurements:
+    #     data = read_json_file(specimen_measurements)
+    #     new_specimen_measurements = await csv_to_new_specimen_measurements(
+    #         client,
+    #         specimen_url=specimen_url,
+    #         people_url=people_url,
+    #         specimen_measurement_url_creator=specimen_measurement_url_creator,
+    #         data=data,
+    #     )
+    #     new_specimen_measurements = list(new_specimen_measurements)
 
-        urls = [
-            f"{specimen_url}/{specimen_id}/measurements"
-            for specimen_id, _ in new_specimen_measurements
-        ]
-        data = [measurement for _, measurement in new_specimen_measurements]
+    #     urls = [
+    #         f"{specimen_url}/{specimen_id}/measurements"
+    #         for specimen_id, _ in new_specimen_measurements
+    #     ]
+    #     data = [measurement for _, measurement in new_specimen_measurements]
 
-        request_response_pairs = await _post_many(client, urls, data, ahmed_id)
-        await _write_errors(
-            request_response_pairs,
-            errors_dir,
-            filename_generator=lambda _: "specimen-measurements",
-        )
+    #     request_response_pairs = await _post_many(client, urls, data, ahmed_id)
+    #     await _write_errors(
+    #         request_response_pairs,
+    #         errors_dir,
+    #         filename_generator=lambda _: "specimen-measurements",
+    #     )
 
     suspensions_url = f"{settings.api_base_url}/suspensions"
     multiplexing_tags_url = f"{settings.api_base_url}/multiplexing-tags"
@@ -212,30 +212,30 @@ async def _update_cellnoor_api_inner(
         )
         await _write_errors(request_response_pairs, errors_dir)
 
-        new_suspension_measurements = await csv_to_suspension_measurements(
-            people_url=people_url,
-            suspensions_url=suspensions_url,
-            data=data,
-            client=client,
-        )
+        # new_suspension_measurements = await csv_to_suspension_measurements(
+        #     people_url=people_url,
+        #     suspensions_url=suspensions_url,
+        #     data=data,
+        #     client=client,
+        # )
 
-        urls = [
-            f"{suspensions_url}/{suspension_id}/measurements"
-            for suspension_id, measurement_set in new_suspension_measurements
-            for _ in measurement_set
-        ]
-        data = [
-            measurement
-            for _, measurement_set in new_suspension_measurements
-            for measurement in measurement_set
-        ]
+        # urls = [
+        #     f"{suspensions_url}/{suspension_id}/measurements"
+        #     for suspension_id, measurement_set in new_suspension_measurements
+        #     for _ in measurement_set
+        # ]
+        # data = [
+        #     measurement
+        #     for _, measurement_set in new_suspension_measurements
+        #     for measurement in measurement_set
+        # ]
 
-        request_response_pairs = await _post_many(client, urls, data, ahmed_id)
-        await _write_errors(
-            request_response_pairs,
-            errors_dir,
-            filename_generator=lambda _: "suspension-measurements",
-        )
+        # request_response_pairs = await _post_many(client, urls, data, ahmed_id)
+        # await _write_errors(
+        #     request_response_pairs,
+        #     errors_dir,
+        #     filename_generator=lambda _: "suspension-measurements",
+        # )
 
     if settings.suspension_pools and settings.suspensions is None:
         raise ValueError("cannot specify suspension pools without suspensions")
