@@ -5,4 +5,7 @@ set -euo pipefail
 cd /sc/service/tmp/update-cellnoor
 cd update-cellnoor/python/update-cellnoor
 
+module unload conda
+module load uv
+
 uv run copy_chromium_datasets.py ../../../chromium-dataset-copies

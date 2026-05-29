@@ -43,7 +43,7 @@ const sampleConfigObj = {
           name: "Suspensions",
           header: 1,
           exclude_row_fn:
-            "(row) => !row['Suspension ID'] || !row['Specimen ID'] || row['ID'] === '0'",
+            "(row) => !row['Suspension ID'] || row['Suspension ID'] === '0' || !row['Specimen ID']",
         },
         {
           name: "Multiplexed Suspensions",
