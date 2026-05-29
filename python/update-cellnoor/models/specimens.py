@@ -80,7 +80,7 @@ def _parse_row(
         if data["embedded_in"] is None:
             data["embedded_in"] = to_snake_case(preliminary_em)
 
-    match (row["type"], row["preservation_method"]):
+    match (row["type"], row.get("preservation_method")):
         # TODO: remove this
         # case ("Nucleus Suspension", "Flash-frozen"):
         #     data["type"] = "tissue"
