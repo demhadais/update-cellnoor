@@ -93,11 +93,15 @@ async def csvs_to_new_suspension_pools(
     suspension_csv_data = {
         susp_row["readable_id"]: susp_row for susp_row in suspension_csv_data
     }  # pyright: ignore[reportAssignmentType]
+    pools_to_skip = set()
 
     suspensions_from_api = await suspensions_from_api.json()
     for suspension in suspensions_from_api:
         readable_id = suspension["readable_id"]
-        suspension_from_csv = suspension_csv_data[readable_id]
+        suspension_from_csv = suspension_csv_data.get(readable_id)
+        if suspension_from_csv is None:
+            # Somehow there's a suspension in the API that's not in the CSV :)
+            continue
         if pooled_into := suspension_from_csv.get("pooled_into_id"):
             suspension["pooled_into_id"] = pooled_into
 
