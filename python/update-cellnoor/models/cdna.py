@@ -21,7 +21,7 @@ def _parse_row(
 ) -> dict[str, Any] | None:
     data = {"readable_id": row["readable_id"]}
 
-    library_type = to_snake_case(row["library_type"])
+    library_type = to_snake_case(row.get("library_type", ""))
     library_type = {
         "gene_expression_flex": "gene_expression",
         "vdj-t": "vdj",
