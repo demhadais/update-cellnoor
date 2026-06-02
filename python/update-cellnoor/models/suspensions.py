@@ -52,7 +52,7 @@ def _parse_suspension_row(
         data["created_at"] = date_created
 
     try:
-        data["content"] = to_snake_case(row["biological_material"])
+        data["content"] = to_snake_case(row.get("biological_material", ""))
     except AttributeError:
         pass
 
