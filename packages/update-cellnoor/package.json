@@ -1,6 +1,6 @@
 {
-  "name": "download-scbl-excel-workbooks",
-  "version": "1.0.3",
+  "name": "update-cellnoor",
+  "version": "1.0.0",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -14,6 +14,7 @@
     "@azure/identity": "^4.13.1",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "openapi-fetch": "0.17.0"
   }
 }

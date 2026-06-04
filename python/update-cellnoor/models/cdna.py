@@ -29,7 +29,7 @@ def _parse_row(
     }.get(library_type, library_type)
     data["library_type"] = library_type
 
-    data["preparer_ids"] = [
+    data["preparers"] = [
         people[row[key]]
         for key in ["preparer_email", "preparer_2"]
         if key in row and row[key] is not None

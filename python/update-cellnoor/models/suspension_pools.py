@@ -47,7 +47,7 @@ def _parse_row(
     else:
         data["multiplexing_type"] = "genetic"
 
-    data["preparer_ids"] = [
+    data["preparers"] = [
         people[row[email_key]]
         for email_key in ["preparer_1_email", "preparer_2"]
         if row.get(email_key) is not None

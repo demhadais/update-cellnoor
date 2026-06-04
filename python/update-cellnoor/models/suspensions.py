@@ -46,7 +46,7 @@ def _parse_suspension_row(
     parent_specimen = specimens.get(
         row["parent_specimen_readable_id"], {"id": uuid.uuid7()}
     )
-    data["parent_specimen_id"] = parent_specimen["id"]
+    data["specimen_id"] = parent_specimen["id"]
 
     if date_created := row.get("date_created"):
         data["created_at"] = date_created
@@ -56,7 +56,7 @@ def _parse_suspension_row(
     except AttributeError:
         pass
 
-    data["preparer_ids"] = [
+    data["preparers"] = [
         people[row[key]]
         for key in ["preparer_1_email", "preparer_2"]
         if row.get(key) is not None

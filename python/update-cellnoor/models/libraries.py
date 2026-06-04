@@ -23,12 +23,12 @@ def _parse_row(
 
     data["cdna_id"] = cdna.get(row["cdna_readable_id"], uuid.uuid4())
 
-    data["preparer_ids"] = [
+    data["preparers"] = [
         people[row[k]] for k in ["preparer_1_email", "preparer_2_email"] if k in row
     ]
 
-    if not data["preparer_ids"]:
-        data["preparer_ids"] = [people["ahmed.said@jax.org"]]
+    if not data["preparers"]:
+        data["preparers"] = [people["ahmed.said@jax.org"]]
 
     # These spreadsheets are absolutely infernal
     data["number_of_sample_index_pcr_cycles"] = int(

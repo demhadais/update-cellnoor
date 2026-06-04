@@ -5,7 +5,7 @@ import aiohttp
 
 
 def _parse_row(row: dict[str, Any]) -> dict[str, Any] | None:
-    data = {key: row[key] for key in ["id", "name"]}
+    data = {key: row[key] for key in ["microsoft_entra_tenant_id", "name"]}
 
     # These are duplicates
     if data["name"] in (
@@ -25,12 +25,17 @@ async def csv_to_new_institutions(
     data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     response = await client.get(institutions_url)
-    pre_existing_institutions = {inst["id"] for inst in (await response.json())}
+    pre_existing_institutions = {
+        inst["microsoft_entra_tenant_id"] for inst in (await response.json())
+    }
     new_institutions = (_parse_row(row) for row in data)
     new_institutions = (
         inst
         for inst in new_institutions
-        if not (inst is None or inst["id"] in pre_existing_institutions)
+        if not (
+            inst is None
+            or inst["microsoft_entra_tenant_id"] in pre_existing_institutions
+        )
     )
 
     return new_institutions

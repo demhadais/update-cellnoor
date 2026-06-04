@@ -12,11 +12,13 @@ def _parse_row(
     required_keys = {"name", "email"}
     data = {key: row[key] for key in required_keys if key in row}
 
+    data["is_staff"] = row.get("is_staff", False)
+
     email_domain = row["email"].split("@")[-1] if row["email"] is not None else ""
     data["institution_id"] = institution_domains.get(email_domain)
 
     microsoft_entra_oid_key = "microsoft_entra_oid"
-    if microsoft_entra_oid := row[microsoft_entra_oid_key]:
+    if microsoft_entra_oid := row.get(microsoft_entra_oid_key):
         data[microsoft_entra_oid_key] = microsoft_entra_oid
 
     return data

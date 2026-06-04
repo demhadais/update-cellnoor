@@ -12,7 +12,6 @@ from utils import (
     TenxAssaySpec,
     get_person_email_id_map,
     property_id_map,
-    str_to_bool,
     str_to_float,
 )
 

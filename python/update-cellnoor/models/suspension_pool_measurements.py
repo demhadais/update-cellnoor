@@ -12,7 +12,7 @@
 #     chip_run_on = pooled_at
 #     pass
 
-# measured_by = preparer_ids[0]
+# measured_by = preparers[0]
 
 # concentrations = [
 #     ("pre-storage_cell/nucleus_concentration_(cell-nucleus/ml)", pooled_at),

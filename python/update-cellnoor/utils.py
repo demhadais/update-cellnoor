@@ -151,8 +151,8 @@ def strip_str_values(data: dict[str, Any], ahmed_id: str) -> dict[str, Any]:
             new_dict[key] = _strip(val)
 
     # THIS IS A HACK BECAUSE WE DON'T KNOW HOW TO ENTER DATA
-    if "preparer_ids" in new_dict and len(new_dict["preparer_ids"]) == 0:
-        new_dict["preparer_ids"] = [ahmed_id]
+    if "preparers" in new_dict and len(new_dict["preparers"]) == 0:
+        new_dict["preparers"] = [ahmed_id]
     if "run_by" in new_dict and not new_dict["run_by"]:
         new_dict["run_by"] = ahmed_id
     if "measured_by" in new_dict and not new_dict["measured_by"]:

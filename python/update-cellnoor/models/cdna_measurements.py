@@ -1,6 +1,6 @@
 # data["measurements"].append(
 #     NewCdnaMeasurement(
-#         measured_by=preparer_ids[0],
+#         measured_by=preparers[0],
 #         data=NucleicAcidMeasurementData.Electrophoretic(
 #             measured_at=prepared_at,
 #             instrument_name="TapeStation",

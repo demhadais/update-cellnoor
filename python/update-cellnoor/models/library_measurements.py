@@ -30,7 +30,7 @@
 #     measurement2 = None
 
 # measurements = [
-#     NewLibraryMeasurement(measured_by=preparer_ids[0], data=data)
+#     NewLibraryMeasurement(measured_by=preparers[0], data=data)
 #     for data in [measurement1, measurement2]
 #     if data is not None
 # ]

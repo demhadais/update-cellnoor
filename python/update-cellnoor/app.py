@@ -27,6 +27,7 @@ from models.specimens import csv_to_new_specimens
 from models.suspension_measurements import csv_to_suspension_measurements
 from models.suspension_pools import csvs_to_new_suspension_pools
 from models.suspensions import csv_to_new_suspensions
+from models.tenx_assays import upload_tenx_assays
 from utils import JsonSpec, TenxAssaySpec, read_json_file, strip_str_values, write_error
 
 UPDATE_CELLNOOR = "update-cellnoor"
@@ -74,7 +75,14 @@ async def _write_errors(
 async def _update_cellnoor_api(settings: "Settings"):
     connector = aiohttp.TCPConnector(ssl=not settings.accept_invalid_certificates)
     client = aiohttp.ClientSession(
-        headers={"Authorization": f"Bearer {settings.api_token}"},
+        headers={
+            "Authorization": f"Bearer {settings.api_token}",
+            "x-api-key": settings.api_token,
+        },
+        cookies={
+            "__Secure-cellnoor-auth.session_data": settings.auth_cookie,
+            "cellnoor-auth.session_data": settings.auth_cookie,
+        },
         connector=connector,
     )
 
@@ -90,6 +98,8 @@ async def _update_cellnoor_api_inner(
     client: aiohttp.ClientSession, settings: "Settings"
 ):
     errors_dir = settings.errors_dir
+
+    await upload_tenx_assays(client, settings.api_base_url)
 
     institution_url = f"{settings.api_base_url}/institutions"
     if institutions := settings.institutions:
@@ -355,6 +365,7 @@ class Settings(BaseSettings):
     )
     api_base_url: str
     api_token: str
+    auth_cookie: str = ""
     accept_invalid_certificates: bool = False
     institutions: JsonSpec | None = None
     people: JsonSpec | None = None

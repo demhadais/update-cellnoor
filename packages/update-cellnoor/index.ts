@@ -57,7 +57,7 @@ function parseCommandline() {
         type: "string",
         short: "c",
         default: Bun.env.DOWNLOAD_SCBL_EXCEL_WORKBOOKS_CONFIG_PATH ??
-          `${os.homedir()}/.config/update-cellnoor/download-scbl-excel-workbooks.toml`,
+          `${os.homedir()}/.config/update-cellnoor/settings.toml`,
       },
       output_dir: {
         type: "string",
