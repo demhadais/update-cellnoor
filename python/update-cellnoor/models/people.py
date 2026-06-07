@@ -12,7 +12,9 @@ def _parse_row(
     required_keys = {"name", "email"}
     data = {key: row[key] for key in required_keys if key in row}
 
-    data["is_staff"] = row.get("is_staff", False)
+    data["can_read_all_projects"] = row.get("is_staff", False)
+    data["can_admin_users"] = False
+    data["permissions_to_grant"] = []
 
     email_domain = row["email"].split("@")[-1] if row["email"] is not None else ""
     data["institution_id"] = institution_domains.get(email_domain)

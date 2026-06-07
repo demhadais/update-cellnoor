@@ -19,6 +19,8 @@ def _parse_row(
     required_keys = {"readable_id", "name", "date_pooled"}
 
     data = {key: row[key] for key in required_keys if key in row}
+    # TODO
+    data["measurements"] = []
 
     # Assign basic information
     if pooled_at := row.get("date_pooled"):

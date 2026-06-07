@@ -22,6 +22,7 @@ from models.institutions import (
 from models.libraries import csv_to_new_libraries
 from models.people import csv_to_new_people
 from models.projects import csv_to_new_projects
+from models.seed_data import upload_seed_data
 from models.specimen_measurements import csv_to_new_specimen_measurements
 from models.specimens import csv_to_new_specimens
 from models.suspension_measurements import csv_to_suspension_measurements
@@ -99,7 +100,7 @@ async def _update_cellnoor_api_inner(
 ):
     errors_dir = settings.errors_dir
 
-    await upload_tenx_assays(client, settings.api_base_url)
+    await upload_seed_data(client, settings.api_base_url)
 
     institution_url = f"{settings.api_base_url}/institutions"
     if institutions := settings.institutions:
@@ -302,7 +303,7 @@ async def _update_cellnoor_api_inner(
         new_cdna = await csv_to_new_cdna(
             client,
             cdna_url=cdna_url,
-            gem_pool_url=f"{settings.api_base_url}/gem-pools",
+            chromium_run_url=f"{settings.api_base_url}/chromium-runs/search/detailed",
             people_url=people_url,
             data=data,
             id_key=settings.cdna.id_key,

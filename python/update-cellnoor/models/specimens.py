@@ -31,7 +31,10 @@ def _parse_row(
         for simple_key in ["name", "readable_id", "tissue"]
     }
 
-    data["project_id"] = projects.get(row["lab_name"], str(uuid.uuid7()))
+    # TODO: fill this in
+    data["measurements"] = []
+
+    data["project_id"] = projects.get(row["lab_name"])
 
     if submitter_email := row["submitter_email"]:
         data["submitted_by"] = people[submitter_email.lower()]

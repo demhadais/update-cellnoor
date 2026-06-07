@@ -43,6 +43,9 @@ def _parse_suspension_row(
 
     data = {key: row[key] for key in ["readable_id"]}
 
+    # TODO: real measurements
+    data["measurements"] = []
+
     parent_specimen = specimens.get(
         row["parent_specimen_readable_id"], {"id": uuid.uuid7()}
     )

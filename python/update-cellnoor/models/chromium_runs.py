@@ -165,7 +165,7 @@ def _parse_chromium_run(
         return None
 
     data["plexy"] = _plexy(gem_pools)
-    data["gem_pools"] = gem_pools
+    data["gem_wells"] = gem_pools
 
     return data
 

@@ -65,27 +65,32 @@ def _parse_row(
 async def csv_to_new_cdna(
     client: aiohttp.ClientSession,
     people_url: str,
-    gem_pool_url: str,
+    chromium_run_url: str,
     cdna_url: str,
     data: list[dict[str, Any]],
     id_key: str,
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
         people = tg.create_task(get_person_email_id_map(client, people_url))
-        gem_pools = tg.create_task(client.get(gem_pool_url, params=NO_LIMIT_QUERY))
+        chromium_runs = tg.create_task(
+            client.post(chromium_run_url, params=NO_LIMIT_QUERY, json=None)
+        )
         pre_existing_cdna = tg.create_task(client.get(cdna_url, params=NO_LIMIT_QUERY))
 
-    people, gem_pools, pre_existing_cdna = (
+    people, chromium_runs, pre_existing_cdna = (
         people.result(),
-        await gem_pools.result().json(),
+        await chromium_runs.result().json(),
         await pre_existing_cdna.result().json(),
     )
 
     pre_existing_cdna = {c["readable_id"]: c for c in pre_existing_cdna}
 
-    gem_pools = {pool["readable_id"]: pool["id"] for pool in gem_pools}
+    gem_wells = {}
+    for run in chromium_runs:
+        for gem_well in run["gem_wells"]:
+            gem_wells[gem_well["readable_id"]] = gem_well["id"]
 
-    cdna = (_parse_row(row, gem_pools, people) for row in data)
+    cdna = (_parse_row(row, gem_wells, people) for row in data)
     cdna = (c for c in cdna if not (c is None or c["readable_id"] in pre_existing_cdna))
 
     return cdna
