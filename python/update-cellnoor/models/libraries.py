@@ -22,6 +22,8 @@ def _parse_row(
     data = {"readable_id": row["readable_id"]}
 
     data["cdna_id"] = cdna.get(row["cdna_readable_id"], uuid.uuid4())
+    # TODO
+    data["measurements"] = []
 
     data["preparers"] = [
         people[row[k]] for k in ["preparer_1_email", "preparer_2_email"] if k in row

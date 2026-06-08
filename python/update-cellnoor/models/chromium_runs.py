@@ -40,7 +40,7 @@ def _parse_gem_pools(
             }
         else:
             parsed_loading["suspension_volume_loaded"] = {
-                "value": 0,
+                "value": 0.0001,
                 "unit": "microliter",
             }
 
@@ -50,7 +50,10 @@ def _parse_gem_pools(
                 "unit": "microliter",
             }
         else:
-            parsed_loading["buffer_volume_loaded"] = {"value": 0, "unit": "microliter"}
+            parsed_loading["buffer_volume_loaded"] = {
+                "value": 0.0001,
+                "unit": "microliter",
+            }
 
         # This is thoroughly shit
         if str(loading["tag_id"]).lower().startswith("ob"):

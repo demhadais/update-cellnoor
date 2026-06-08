@@ -21,6 +21,9 @@ def _parse_row(
 ) -> dict[str, Any] | None:
     data = {"readable_id": row["readable_id"]}
 
+    # TODO
+    data["measurements"] = []
+
     library_type = to_snake_case(row.get("library_type", ""))
     library_type = {
         "gene_expression_flex": "gene_expression",
@@ -35,7 +38,7 @@ def _parse_row(
         if key in row and row[key] is not None
     ]
 
-    data["gem_pool_id"] = gem_pools.get(row["gems_readable_id"])
+    data["gem_well_id"] = gem_pools.get(row["gems_readable_id"])
 
     if n_amplification_cycles := row.get("n_amplification_cycles"):
         data["n_amplification_cycles"] = int(str_to_float(n_amplification_cycles))
@@ -73,7 +76,7 @@ async def csv_to_new_cdna(
     async with asyncio.TaskGroup() as tg:
         people = tg.create_task(get_person_email_id_map(client, people_url))
         chromium_runs = tg.create_task(
-            client.post(chromium_run_url, params=NO_LIMIT_QUERY, json=None)
+            client.post(chromium_run_url, params=NO_LIMIT_QUERY, json={})
         )
         pre_existing_cdna = tg.create_task(client.get(cdna_url, params=NO_LIMIT_QUERY))
 

@@ -107,7 +107,7 @@ async def csv_to_new_suspensions(
     multiplexing_tags = await multiplexing_tags_task.result().json()
     specimens = {s["readable_id"]: s for s in specimens}
     pre_existing_suspensions = {s["readable_id"] for s in pre_existing_suspensions}
-    multiplexing_tags = {tag["tag_id"]: tag["id"] for tag in multiplexing_tags}
+    multiplexing_tags = {tag["tag_id"]: tag for tag in multiplexing_tags}
 
     new_suspensions = (
         _parse_suspension_row(

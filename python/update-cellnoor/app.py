@@ -28,7 +28,6 @@ from models.specimens import csv_to_new_specimens
 from models.suspension_measurements import csv_to_suspension_measurements
 from models.suspension_pools import csvs_to_new_suspension_pools
 from models.suspensions import csv_to_new_suspensions
-from models.tenx_assays import upload_tenx_assays
 from utils import JsonSpec, TenxAssaySpec, read_json_file, strip_str_values, write_error
 
 UPDATE_CELLNOOR = "update-cellnoor"
@@ -340,18 +339,17 @@ async def _update_cellnoor_api_inner(
     #     )
     #     await _write_errors(request_response_pairs, settings.errors_dir)
 
-    chromium_datasets_url = f"{settings.api_base_url}/chromium-datasets"
     if dataset_dirs := settings.dataset_dirs:
         await post_chromium_datasets(
             client,
-            chromium_datasets_url,
+            settings.api_base_url,
             libraries_url,
             dataset_dirs,
             settings.errors_dir,
         )
 
         await upload_dataset_files(
-            client, chromium_datasets_url, dataset_dirs, errors_dir
+            client, settings.api_base_url, dataset_dirs, errors_dir
         )
 
 

@@ -42,20 +42,47 @@ async def upload_seed_data(client: aiohttp.ClientSession, api_base_url: str):
     for t in tasks:
         response = t.result()
         if not response.ok:
-            print(await response.text())
+            try:
+                as_json = await response.json()
+                if "duplicate" not in as_json["error"]["message"]:
+                    print(as_json)
+            except:
+                print(await response.text())
 
     assays = seed_data["tenx_assays"]
 
-    for a in assays:
-        response = await client.post(f"{api_base_url}/10x-assays", json=a)
-        if response.status == 422:
-            json_response = await response.json()
-            print(json_response)
+    tasks = []
+    async with asyncio.TaskGroup() as tg:
+        for a in assays:
+            tasks.append(
+                tg.create_task(client.post(f"{api_base_url}/10x-assays", json=a))
+            )
+
+    for t in tasks:
+        response: aiohttp.ClientResponse = t.result()
+        if not response.ok:
+            try:
+                as_json = await response.json()
+                if "duplicate" not in as_json["error"]["message"]:
+                    print(as_json)
+            except:
+                print(await response.text())
 
     multiplexing_tags = seed_data["multiplexing_tags"]
 
-    for a in multiplexing_tags:
-        response = await client.post(f"{api_base_url}/multiplexing-tags", json=a)
-        if response.status == 422:
-            json_response = await response.json()
-            print(json_response)
+    tasks = []
+    async with asyncio.TaskGroup() as tg:
+        for t in multiplexing_tags:
+            tasks.append(
+                tg.create_task(client.post(f"{api_base_url}/multiplexing-tags", json=t))
+            )
+
+    for t in tasks:
+        response: aiohttp.ClientResponse = t.result()
+        if not response.ok:
+            try:
+                as_json = await response.json()
+                if "duplicate" not in as_json["error"]["message"]:
+                    print(as_json)
+            except:
+                print(await response.text())
