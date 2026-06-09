@@ -169,11 +169,9 @@ async def write_error(
         "readable_id", d.get("name", "ERROR")
     ),
 ):
-    error_subdir = error_dir / str(filename_generator(request))
-    error_subdir.mkdir(parents=True, exist_ok=True)
-
-    filename = len(list(error_subdir.iterdir()))
-    error_path = error_subdir / Path(f"{filename}.json")
+    error_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{filename_generator(request)}.json"
+    error_path = error_dir / filename
 
     try:
         response_body = await response.json()

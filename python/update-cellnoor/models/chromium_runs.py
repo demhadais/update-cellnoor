@@ -20,9 +20,10 @@ def _parse_gem_pools(
     loadings: list[dict[str, Any]],
     suspensions: dict[str, str],
     suspension_pools: dict[str, str],
-) -> dict[str, Any] | None:
+) -> tuple[dict[str, Any], Literal["good"] | Literal["bad"]] | None:
     gems_readable_id = loadings[0]["gems_readable_id"]
     parsed_loadings = []
+    good_bad: Literal["good"] | Literal["bad"] = "good"
 
     for loading in loadings:
         parsed_loading = {}
@@ -39,6 +40,7 @@ def _parse_gem_pools(
                 "unit": "microliter",
             }
         else:
+            good_bad = "bad"
             parsed_loading["suspension_volume_loaded"] = {
                 "value": 0.0001,
                 "unit": "microliter",
@@ -50,6 +52,7 @@ def _parse_gem_pools(
                 "unit": "microliter",
             }
         else:
+            good_bad = "bad"
             parsed_loading["buffer_volume_loaded"] = {
                 "value": 0.0001,
                 "unit": "microliter",
@@ -76,11 +79,11 @@ def _parse_gem_pools(
     if n == 1:
         parsed_loading = parsed_loadings[0]
         gem_pool = {"readable_id": gems_readable_id, "loading": parsed_loading}
-        return gem_pool
+        return gem_pool, good_bad
 
     if n >= 1:
         gem_pool = {"readable_id": gems_readable_id, "loading": parsed_loadings}
-        return gem_pool
+        return gem_pool, good_bad
 
 
 def _gems_loading_succeeded(loadings: list[dict[str, Any]]):
@@ -155,13 +158,17 @@ def _parse_chromium_run(
 
         data["succeeded"] = data["succeeded"] and _gems_loading_succeeded(loadings)
 
-        gem_pools.append(
-            _parse_gem_pools(
-                loadings,
-                suspensions=suspensions,
-                suspension_pools=suspension_pools,
-            )
+        maybe_gem_well = _parse_gem_pools(
+            loadings,
+            suspensions=suspensions,
+            suspension_pools=suspension_pools,
         )
+        if maybe_gem_well is not None:
+            gem_well, good_bad = maybe_gem_well
+            gem_pools.append(gem_well)
+            if good_bad == "bad":
+                data["additional_data"] = {}
+                data["additional_data"]["has_correct_loading_volumes"] = False
 
     gem_pools = [g for g in gem_pools if g is not None]
     if not (gem_pools):

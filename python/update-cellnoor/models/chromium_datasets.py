@@ -79,7 +79,6 @@ def _construct_multipart_form(dataset_id_and_path: tuple[str, Path]):
 
     file_uploads = aiohttp.FormData(quote_fields=False, default_to_multipart=True)
     for filename, file_content in files:
-        print(filename)
         file_uploads.add_field(
             filename,
             file_content,
@@ -130,8 +129,8 @@ async def upload_dataset_files(
 
     datasets_for_which_to_upload_files: list[tuple[str, Path]] = []
     for dataset_from_api in pre_existing_datasets:
-        if dataset_from_api["links"]["raw_files"]:
-            continue
+        # if dataset_from_api["links"]["raw_files"]:
+        #     continue
         dataset_dir = dataset_dir_map[dataset_from_api["name"]]
         datasets_for_which_to_upload_files.append((dataset_from_api["id"], dataset_dir))
 

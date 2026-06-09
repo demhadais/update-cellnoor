@@ -40,10 +40,7 @@ def _parse_row(
 
     data["gem_well_id"] = gem_pools.get(row["gems_readable_id"])
 
-    if n_amplification_cycles := row.get("n_amplification_cycles"):
-        data["n_amplification_cycles"] = int(str_to_float(n_amplification_cycles))
-    else:
-        data["n_amplification_cycles"] = 0
+    data["n_amplification_cycles"] = row.get("n_amplification_cycles")
 
     if volume := row.get("volume_(µl)"):
         data["volume_µl"] = int(str_to_float(volume))

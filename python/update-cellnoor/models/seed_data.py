@@ -6,6 +6,11 @@ import aiohttp
 
 
 async def upload_seed_data(client: aiohttp.ClientSession, api_base_url: str):
+    async with client.get(f"{api_base_url}/10x-assays") as resp:
+        assays = await resp.json()
+        if assays:
+            return
+
     seed_data = json.loads((Path(__file__).parent / "seed-data.json").read_text())
 
     single_index_set_urls = seed_data["single_index_set_urls"]
