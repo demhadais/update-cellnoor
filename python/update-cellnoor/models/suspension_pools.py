@@ -63,12 +63,15 @@ async def csvs_to_new_suspension_pools(
     suspension_pool_url: str,
     suspensions_url: str,
     multiplexing_tags_url: str,
+    original_person_data: list[dict[str, Any]],
     suspension_pool_data: list[dict[str, Any]],
     suspension_csv_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
         tasks = (
-            tg.create_task(get_person_email_id_map(client, people_url)),
+            tg.create_task(
+                get_person_email_id_map(client, people_url, original_person_data)
+            ),
             tg.create_task(client.get(suspension_pool_url, params=NO_LIMIT_QUERY)),
             tg.create_task(client.get(suspensions_url, params=NO_LIMIT_QUERY)),
             tg.create_task(client.get(multiplexing_tags_url)),

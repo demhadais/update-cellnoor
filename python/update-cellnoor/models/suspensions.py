@@ -87,10 +87,13 @@ async def csv_to_new_suspensions(
     suspensions_url: str,
     multiplexing_tags_url: str,
     data: list[dict[str, Any]],
+    original_person_data: list[dict[str, Any]],
     id_key: str,
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people_task = tg.create_task(get_person_email_id_map(client, people_url))
+        people_task = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         specimens_task = tg.create_task(
             client.get(specimens_url, params=NO_LIMIT_QUERY)
         )

@@ -69,9 +69,12 @@ async def csv_to_new_cdna(
     cdna_url: str,
     data: list[dict[str, Any]],
     id_key: str,
+    original_person_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people = tg.create_task(get_person_email_id_map(client, people_url))
+        people = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         chromium_runs = tg.create_task(
             client.post(chromium_run_url, params=NO_LIMIT_QUERY, json={})
         )

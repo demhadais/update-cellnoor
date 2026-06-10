@@ -19,9 +19,9 @@ def _parse_row(
     email_domain = row["email"].split("@")[-1] if row["email"] is not None else ""
     data["institution_id"] = institution_domains.get(email_domain)
 
-    microsoft_entra_oid_key = "microsoft_entra_oid"
-    if microsoft_entra_oid := row.get(microsoft_entra_oid_key):
-        data[microsoft_entra_oid_key] = microsoft_entra_oid
+    if microsoft_entra_oid := row.get("microsoft_entra_oid"):
+        data["auth_provider_user_id"] = microsoft_entra_oid
+        data["auth_provider_name"] = "microsoft"
 
     return data
 

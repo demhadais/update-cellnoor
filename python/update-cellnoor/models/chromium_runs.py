@@ -190,9 +190,12 @@ async def csv_to_chromium_runs(
     gem_pools_data: list[dict[str, Any]],
     gem_pools_loading_data: list[dict[str, Any]],
     assay_name_to_spec: dict[str, TenxAssaySpec],
+    original_person_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people_task = tg.create_task(get_person_email_id_map(client, people_url))
+        people_task = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         suspensions_task = tg.create_task(
             client.get(suspensions_url, params=NO_LIMIT_QUERY)
         )

@@ -114,24 +114,23 @@ async def _update_cellnoor_api_inner(
         await _write_errors(responses, errors_dir)
 
     people_url = f"{settings.api_base_url}/people"
-    if people := settings.people:
-        data = read_json_file(people)
-        new_people = await csv_to_new_people(
-            client,
-            institution_url=institution_url,
-            people_url=people_url,
-            data=data,
-        )
-        responses = await _post_many(client, people_url, new_people, "")
-        await _write_errors(
-            responses,
-            errors_dir,
-            lambda pers: (
-                pers["email"].replace("@", "at")
-                if pers["email"] is not None
-                else "unknown-email"
-            ),
-        )
+    original_person_data = read_json_file(settings.people)
+    new_people = await csv_to_new_people(
+        client,
+        institution_url=institution_url,
+        people_url=people_url,
+        data=original_person_data,
+    )
+    responses = await _post_many(client, people_url, new_people, "")
+    await _write_errors(
+        responses,
+        errors_dir,
+        lambda pers: (
+            pers["email"].replace("@", "at")
+            if pers["email"] is not None
+            else "unknown-email"
+        ),
+    )
 
     async with client.get(
         f"{settings.api_base_url}/people",
@@ -170,6 +169,7 @@ async def _update_cellnoor_api_inner(
             project_url=project_url,
             specimen_url=specimen_url,
             data=data,
+            original_person_data=original_person_data,
         )
         request_response_pairs = await _post_many(
             client, specimen_url, new_specimens, ahmed_id
@@ -216,6 +216,7 @@ async def _update_cellnoor_api_inner(
             suspensions_url=suspensions_url,
             data=data,
             id_key=suspensions.id_key,
+            original_person_data=original_person_data,
         )
         request_response_pairs = await _post_many(
             client, f"{suspensions_url}", new_suspensions, ahmed_id
@@ -260,6 +261,7 @@ async def _update_cellnoor_api_inner(
             suspensions_url=suspensions_url,
             multiplexing_tags_url=multiplexing_tags_url,
             suspension_pool_data=data,
+            original_person_data=original_person_data,
             suspension_csv_data=read_json_file(settings.suspensions),  # pyright: ignore[reportArgumentType]
         )
 
@@ -288,6 +290,7 @@ async def _update_cellnoor_api_inner(
             chromium_runs_url=chromium_runs_url,
             assay_name_to_spec=settings.assay_map,
             gem_pools_data=gems,
+            original_person_data=original_person_data,
             gem_pools_loading_data=gems_suspensions,
         )
 
@@ -305,6 +308,7 @@ async def _update_cellnoor_api_inner(
             chromium_run_url=f"{settings.api_base_url}/chromium-runs/search/detailed",
             people_url=people_url,
             data=data,
+            original_person_data=original_person_data,
             id_key=settings.cdna.id_key,
         )
 
@@ -319,6 +323,7 @@ async def _update_cellnoor_api_inner(
             cdna_url=cdna_url,
             libraries_url=libraries_url,
             people_url=people_url,
+            original_person_data=original_person_data,
             data=data,
         )
 
@@ -367,7 +372,7 @@ class Settings(BaseSettings):
     auth_cookie: str = ""
     accept_invalid_certificates: bool = False
     institutions: JsonSpec | None = None
-    people: JsonSpec | None = None
+    people: JsonSpec
     projects: JsonSpec | None = None
     specimens: JsonSpec | None = None
     specimen_measurements: JsonSpec | None = None
