@@ -20,10 +20,9 @@ def _parse_gem_pools(
     loadings: list[dict[str, Any]],
     suspensions: dict[str, str],
     suspension_pools: dict[str, str],
-) -> tuple[dict[str, Any], Literal["good"] | Literal["bad"]] | None:
+) -> dict[str, Any] | None:
     gems_readable_id = loadings[0]["gems_readable_id"]
     parsed_loadings = []
-    good_bad: Literal["good"] | Literal["bad"] = "good"
 
     for loading in loadings:
         parsed_loading = {}
@@ -33,30 +32,6 @@ def _parse_gem_pools(
             parsed_loading["suspension_pool_id"] = suspension_pools.get(
                 suspension_pool_readable_id
             )
-
-        if suspension_volume_loaded := loading.get("suspension_volume_loaded_(µl)"):
-            parsed_loading["suspension_volume_loaded"] = {
-                "value": str_to_float(suspension_volume_loaded),
-                "unit": "microliter",
-            }
-        else:
-            good_bad = "bad"
-            parsed_loading["suspension_volume_loaded"] = {
-                "value": 0.0001,
-                "unit": "microliter",
-            }
-
-        if buffer_volume_loaded := parsed_loading.get("buffer_volume_loaded"):
-            parsed_loading["buffer_volume_loaded"] = {
-                "value": str_to_float(buffer_volume_loaded),
-                "unit": "microliter",
-            }
-        else:
-            good_bad = "bad"
-            parsed_loading["buffer_volume_loaded"] = {
-                "value": 0.0001,
-                "unit": "microliter",
-            }
 
         # This is thoroughly shit
         if str(loading["tag_id"]).lower().startswith("ob"):
@@ -78,12 +53,12 @@ def _parse_gem_pools(
 
     if n == 1:
         parsed_loading = parsed_loadings[0]
-        gem_pool = {"readable_id": gems_readable_id, "loading": parsed_loading}
-        return gem_pool, good_bad
+        gem_pool = {"readable_id": gems_readable_id} | parsed_loading
+        return gem_pool
 
     if n >= 1:
         gem_pool = {"readable_id": gems_readable_id, "loading": parsed_loadings}
-        return gem_pool, good_bad
+        return gem_pool
 
 
 def _gems_loading_succeeded(loadings: list[dict[str, Any]]):
@@ -98,12 +73,10 @@ def _gems_loading_succeeded(loadings: list[dict[str, Any]]):
 def _gem_pool_plexy(
     gem_pool: dict[str, Any],
 ) -> Literal["standard", "on_chip_multiplexing"] | None:
-    loading = gem_pool["loading"]
-
-    if isinstance(loading, dict) and (
-        loading.get("suspension_pool_id") or loading.get("suspension_id")
-    ):
+    if gem_pool.get("suspension_pool_id") or gem_pool.get("suspension_id"):
         return "standard"
+
+    loading = gem_pool["loading"]
 
     if isinstance(loading, list):
         if loading[0].get("ocm_barcode_id"):
@@ -164,11 +137,8 @@ def _parse_chromium_run(
             suspension_pools=suspension_pools,
         )
         if maybe_gem_well is not None:
-            gem_well, good_bad = maybe_gem_well
+            gem_well = maybe_gem_well
             gem_pools.append(gem_well)
-            if good_bad == "bad":
-                data["additional_data"] = {}
-                data["additional_data"]["has_correct_loading_volumes"] = False
 
     gem_pools = [g for g in gem_pools if g is not None]
     if not (gem_pools):

@@ -19,9 +19,13 @@ def _parse_row(
     email_domain = row["email"].split("@")[-1] if row["email"] is not None else ""
     data["institution_id"] = institution_domains.get(email_domain)
 
-    if microsoft_entra_oid := row.get("microsoft_entra_oid"):
-        data["auth_provider_user_id"] = microsoft_entra_oid
-        data["auth_provider_name"] = "microsoft"
+    data["account"] = {}
+    microsoft_entra_oid_key = "microsoft_entra_oid"
+    if microsoft_entra_oid := row.get(microsoft_entra_oid_key):
+        data["account"]["auth_provider"] = "microsoft"
+        data["account"][microsoft_entra_oid_key] = microsoft_entra_oid
+    else:
+        data["account"]["email"] = data["email"]
 
     return data
 
@@ -63,15 +67,31 @@ async def csv_to_new_people(
 ) -> Generator[dict[str, Any]]:
     institution_domains = await _email_domain_institution_map(client, institution_url)
     new_people = (_parse_row(row, institution_domains) for row in data)
+
     async with client.get(people_url, params=NO_LIMIT_QUERY) as resp:
         people_json = await resp.json()
-    pre_existing_people = {p["email"] for p in people_json}
-    pre_existing_people = pre_existing_people | {
-        email.lower() for email in pre_existing_people if email is not None
+
+    async with client.get(people_url.replace("people", "accounts")) as resp:
+        accounts_json = await resp.json()
+
+    pre_existing_people = {p.get("email") for p in people_json} | {
+        p["auth_provider_user_id"] for p in accounts_json
     }
+    pre_existing_people = pre_existing_people | {
+        s.lower() for s in pre_existing_people if s is not None
+    }
+    pre_existing_people = {p for p in pre_existing_people if p is not None}
 
     new_people = (
-        p for p in new_people if not (p is None or p["email"] in pre_existing_people)
+        p
+        for p in new_people
+        if not (
+            p is None
+            or (p.get("email") in pre_existing_people)
+            or (
+                p.get("account", {}).get("auth_provider_user_id") in pre_existing_people
+            )
+        )
     )
 
     return new_people
