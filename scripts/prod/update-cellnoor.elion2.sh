@@ -6,4 +6,4 @@ set -euo pipefail
 cd /sc/service/tmp/update-cellnoor/update-cellnoor/python/update-cellnoor
 
 module unload conda && module load /sc/service/tools/modules/languages/uv
-uv run main.py --config_path /sc/service/.config/update-cellnoor/update-cellnoor.toml ../../../chromium-dataset-copies/*
+uv run main.py --config_path /sc/service/.config/update-cellnoor/update-cellnoor.toml /sc/service/delivery/*/10x-genomics /sc/service/delivery/*/chromium
