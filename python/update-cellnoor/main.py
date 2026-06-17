@@ -2,11 +2,11 @@ import asyncio
 
 from pydantic_settings import CliApp
 
-from app import Settings
+from app import Cli
 
 
 async def main() -> None:
-    _ = CliApp.run(Settings)
+    _ = CliApp.run(Cli)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,12 @@
 import asyncio
 import json
+import tomllib
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any, override
 
 import aiohttp
+from pydantic import BaseModel
 from pydantic_settings import (
     BaseSettings,
     CliPositionalArg,
@@ -358,15 +360,7 @@ async def _update_cellnoor_api_inner(
         )
 
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix=UPDATE_CELLNOOR.upper(),
-        cli_kebab_case=True,
-    )
-
-    config_path: Path = (
-        Path.home() / ".config" / UPDATE_CELLNOOR / f"{UPDATE_CELLNOOR}.toml"
-    )
+class Settings(BaseModel):
     api_base_url: str
     api_token: str
     auth_cookie: str = ""
@@ -391,22 +385,18 @@ class Settings(BaseSettings):
     log_errors: bool = True
     errors_dir: Path = Path(".errors")
 
-    @classmethod
-    @override
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (
-            TomlConfigSettingsSource(
-                settings_cls,
-                toml_file=cls.model_fields["config_path"].default,
-            ),
-        )
+
+class Cli(BaseSettings):
+    model_config = SettingsConfigDict(
+        cli_parse_args=True,
+        cli_kebab_case=True,
+    )
+
+    config_path: Path = (
+        Path.home() / ".config" / UPDATE_CELLNOOR / f"{UPDATE_CELLNOOR}.toml"
+    )
 
     async def cli_cmd(self):
-        await _update_cellnoor_api(self)
+        settings = Settings.model_validate(tomllib.loads(self.config_path.read_text()))
+
+        await _update_cellnoor_api(settings)
