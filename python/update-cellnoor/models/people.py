@@ -41,7 +41,7 @@ async def _email_domain_institution_map(
         "Banner MD Anderson Cancer Center": "mdanderson.org",
         "Cold Spring Harbor Laboratory": "cshl.edu",
         "Houston Methodist": "houstonmethodist.org",
-        "Jackson Laboratory": "jax.org",
+        "The Jackson Laboratory": "jax.org",
         "University of Connecticut": "uconn.edu",
         "University of Connecticut Health Center": "uchc.edu",
         "Connecticut Children’s Research Institute": "connecticutchildrens.org",
