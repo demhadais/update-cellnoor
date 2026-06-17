@@ -22,7 +22,11 @@ from utils import NO_LIMIT_QUERY, property_id_map, write_error
 
 
 def _get_delivered_at(dataset_directory: Path) -> str:
-    pipeline_metadata = get_pipeline_metadata_file(dataset_directory).read_bytes()
+    try:
+        pipeline_metadata = get_pipeline_metadata_file(dataset_directory).read_bytes()
+    except FileNotFoundError:
+        print(f"{dataset_directory} does not have pipeline-metadata")
+
     pipeline_metadata = json.loads(pipeline_metadata)
     delivered_at = pipeline_metadata["metadata_generated_date"]
     delivered_at = datetime.fromisoformat(delivered_at).replace(tzinfo=UTC)
