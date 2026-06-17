@@ -74,7 +74,7 @@ async def _write_errors(
         )
 
 
-async def _update_cellnoor_api(settings: "Settings"):
+async def _update_cellnoor_api(settings: "Settings", dataset_dirs: list[Path]):
     connector = aiohttp.TCPConnector(ssl=not settings.accept_invalid_certificates)
     client = aiohttp.ClientSession(
         headers={
@@ -89,7 +89,7 @@ async def _update_cellnoor_api(settings: "Settings"):
     )
 
     try:
-        await _update_cellnoor_api_inner(client, settings)
+        await _update_cellnoor_api_inner(client, settings, dataset_dirs)
     except Exception as e:
         raise e
     finally:
@@ -97,7 +97,7 @@ async def _update_cellnoor_api(settings: "Settings"):
 
 
 async def _update_cellnoor_api_inner(
-    client: aiohttp.ClientSession, settings: "Settings"
+    client: aiohttp.ClientSession, settings: "Settings", dataset_dirs: list[Path]
 ):
     errors_dir = settings.errors_dir
 
@@ -346,18 +346,16 @@ async def _update_cellnoor_api_inner(
     #     )
     #     await _write_errors(request_response_pairs, settings.errors_dir)
 
-    if dataset_dirs := settings.dataset_dirs:
+    if dirs := dataset_dirs:
         await post_chromium_datasets(
             client,
             settings.api_base_url,
             libraries_url,
-            dataset_dirs,
+            dirs,
             settings.errors_dir,
         )
 
-        await upload_dataset_files(
-            client, settings.api_base_url, dataset_dirs, errors_dir
-        )
+        await upload_dataset_files(client, settings.api_base_url, dirs, errors_dir)
 
 
 class Settings(BaseModel):
@@ -377,7 +375,6 @@ class Settings(BaseModel):
     cdna: JsonSpec | None = None
     libraries: JsonSpec | None = None
     sequencing_submissions: JsonSpec | None = None
-    dataset_dirs: CliPositionalArg[list[Path]] = []
     assay_map: dict[str, TenxAssaySpec]
     dry_run: bool = False
     print_requests: bool = False
@@ -395,8 +392,9 @@ class Cli(BaseSettings):
     config_path: Path = (
         Path.home() / ".config" / UPDATE_CELLNOOR / f"{UPDATE_CELLNOOR}.toml"
     )
+    dataset_dirs: CliPositionalArg[list[Path]] = []
 
     async def cli_cmd(self):
         settings = Settings.model_validate(tomllib.loads(self.config_path.read_text()))
 
-        await _update_cellnoor_api(settings)
+        await _update_cellnoor_api(settings, self.dataset_dirs)
