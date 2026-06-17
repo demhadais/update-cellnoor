@@ -21,11 +21,12 @@ from utils import NO_LIMIT_QUERY, property_id_map, write_error
 # TODO: this module could easily be made more performant with a clever redesign. If we created some kind of queue where files were compressed in one thread and handed off to another for sending when a batch is complete, then we can separate out the work. Maybe
 
 
-def _get_delivered_at(dataset_directory: Path) -> str:
+def _get_delivered_at(dataset_directory: Path) -> str | None:
     try:
         pipeline_metadata = get_pipeline_metadata_file(dataset_directory).read_bytes()
     except FileNotFoundError:
         print(f"{dataset_directory} does not have pipeline-metadata")
+        return None
 
     pipeline_metadata = json.loads(pipeline_metadata)
     delivered_at = pipeline_metadata["metadata_generated_date"]
