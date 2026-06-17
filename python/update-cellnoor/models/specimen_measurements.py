@@ -6,6 +6,7 @@ import aiohttp
 
 from utils import (
     NO_LIMIT_QUERY,
+    get_person_email_id_map,
     property_id_map,
     str_to_float,
 )
@@ -66,6 +67,7 @@ async def csv_to_new_specimen_measurements(
     specimen_url: str,
     people_url: str,
     specimen_measurement_url_creator: Callable[[str], str],
+    original_person_data: list[dict[str, Any]],
     data: list[dict[str, Any]],
 ) -> Generator[tuple[str, dict[str, Any]]]:
     specimens = await (await client.get(specimen_url, params=NO_LIMIT_QUERY)).json()
@@ -74,8 +76,7 @@ async def csv_to_new_specimen_measurements(
     if len(specimen_id_map) != len(specimens):
         raise ValueError("specimen readable IDs are not unique")
 
-    people = await (await client.get(people_url, params=NO_LIMIT_QUERY)).json()
-    people = property_id_map("email", people)
+    people = await get_person_email_id_map(client, people_url, original_person_data)
 
     pre_existing_measurements = await _get_pre_existing_measurements(
         client, [sp["id"] for sp in specimens], specimen_measurement_url_creator

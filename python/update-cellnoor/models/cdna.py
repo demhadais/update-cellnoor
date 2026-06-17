@@ -21,6 +21,9 @@ def _parse_row(
 ) -> dict[str, Any] | None:
     data = {"readable_id": row["readable_id"]}
 
+    # TODO
+    data["measurements"] = []
+
     library_type = to_snake_case(row.get("library_type", ""))
     library_type = {
         "gene_expression_flex": "gene_expression",
@@ -35,12 +38,9 @@ def _parse_row(
         if key in row and row[key] is not None
     ]
 
-    data["gem_pool_id"] = gem_pools.get(row["gems_readable_id"])
+    data["gem_well_id"] = gem_pools.get(row["gems_readable_id"])
 
-    if n_amplification_cycles := row.get("n_amplification_cycles"):
-        data["n_amplification_cycles"] = int(str_to_float(n_amplification_cycles))
-    else:
-        data["n_amplification_cycles"] = 0
+    data["n_amplification_cycles"] = row.get("n_amplification_cycles")
 
     if volume := row.get("volume_(µl)"):
         data["volume_µl"] = int(str_to_float(volume))
@@ -65,27 +65,35 @@ def _parse_row(
 async def csv_to_new_cdna(
     client: aiohttp.ClientSession,
     people_url: str,
-    gem_pool_url: str,
+    chromium_run_url: str,
     cdna_url: str,
     data: list[dict[str, Any]],
     id_key: str,
+    original_person_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people = tg.create_task(get_person_email_id_map(client, people_url))
-        gem_pools = tg.create_task(client.get(gem_pool_url, params=NO_LIMIT_QUERY))
+        people = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
+        chromium_runs = tg.create_task(
+            client.post(chromium_run_url, params=NO_LIMIT_QUERY, json={})
+        )
         pre_existing_cdna = tg.create_task(client.get(cdna_url, params=NO_LIMIT_QUERY))
 
-    people, gem_pools, pre_existing_cdna = (
+    people, chromium_runs, pre_existing_cdna = (
         people.result(),
-        await gem_pools.result().json(),
+        await chromium_runs.result().json(),
         await pre_existing_cdna.result().json(),
     )
 
     pre_existing_cdna = {c["readable_id"]: c for c in pre_existing_cdna}
 
-    gem_pools = {pool["readable_id"]: pool["id"] for pool in gem_pools}
+    gem_wells = {}
+    for run in chromium_runs:
+        for gem_well in run["gem_wells"]:
+            gem_wells[gem_well["readable_id"]] = gem_well["id"]
 
-    cdna = (_parse_row(row, gem_pools, people) for row in data)
+    cdna = (_parse_row(row, gem_wells, people) for row in data)
     cdna = (c for c in cdna if not (c is None or c["readable_id"] in pre_existing_cdna))
 
     return cdna

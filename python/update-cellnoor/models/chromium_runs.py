@@ -33,25 +33,6 @@ def _parse_gem_pools(
                 suspension_pool_readable_id
             )
 
-        if suspension_volume_loaded := loading.get("suspension_volume_loaded_(µl)"):
-            parsed_loading["suspension_volume_loaded"] = {
-                "value": str_to_float(suspension_volume_loaded),
-                "unit": "microliter",
-            }
-        else:
-            parsed_loading["suspension_volume_loaded"] = {
-                "value": 0,
-                "unit": "microliter",
-            }
-
-        if buffer_volume_loaded := parsed_loading.get("buffer_volume_loaded"):
-            parsed_loading["buffer_volume_loaded"] = {
-                "value": str_to_float(buffer_volume_loaded),
-                "unit": "microliter",
-            }
-        else:
-            parsed_loading["buffer_volume_loaded"] = {"value": 0, "unit": "microliter"}
-
         # This is thoroughly shit
         if str(loading["tag_id"]).lower().startswith("ob"):
             for barcode in loading["tag_id"].split("+"):
@@ -72,7 +53,7 @@ def _parse_gem_pools(
 
     if n == 1:
         parsed_loading = parsed_loadings[0]
-        gem_pool = {"readable_id": gems_readable_id, "loading": parsed_loading}
+        gem_pool = {"readable_id": gems_readable_id} | parsed_loading
         return gem_pool
 
     if n >= 1:
@@ -92,12 +73,10 @@ def _gems_loading_succeeded(loadings: list[dict[str, Any]]):
 def _gem_pool_plexy(
     gem_pool: dict[str, Any],
 ) -> Literal["standard", "on_chip_multiplexing"] | None:
-    loading = gem_pool["loading"]
-
-    if isinstance(loading, dict) and (
-        loading.get("suspension_pool_id") or loading.get("suspension_id")
-    ):
+    if gem_pool.get("suspension_pool_id") or gem_pool.get("suspension_id"):
         return "standard"
+
+    loading = gem_pool["loading"]
 
     if isinstance(loading, list):
         if loading[0].get("ocm_barcode_id"):
@@ -152,20 +131,21 @@ def _parse_chromium_run(
 
         data["succeeded"] = data["succeeded"] and _gems_loading_succeeded(loadings)
 
-        gem_pools.append(
-            _parse_gem_pools(
-                loadings,
-                suspensions=suspensions,
-                suspension_pools=suspension_pools,
-            )
+        maybe_gem_well = _parse_gem_pools(
+            loadings,
+            suspensions=suspensions,
+            suspension_pools=suspension_pools,
         )
+        if maybe_gem_well is not None:
+            gem_well = maybe_gem_well
+            gem_pools.append(gem_well)
 
     gem_pools = [g for g in gem_pools if g is not None]
     if not (gem_pools):
         return None
 
     data["plexy"] = _plexy(gem_pools)
-    data["gem_pools"] = gem_pools
+    data["gem_wells"] = gem_pools
 
     return data
 
@@ -180,9 +160,12 @@ async def csv_to_chromium_runs(
     gem_pools_data: list[dict[str, Any]],
     gem_pools_loading_data: list[dict[str, Any]],
     assay_name_to_spec: dict[str, TenxAssaySpec],
+    original_person_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people_task = tg.create_task(get_person_email_id_map(client, people_url))
+        people_task = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         suspensions_task = tg.create_task(
             client.get(suspensions_url, params=NO_LIMIT_QUERY)
         )

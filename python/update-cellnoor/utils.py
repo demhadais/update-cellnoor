@@ -71,7 +71,9 @@ def property_id_map(
     property_name: str, data: list[dict[str, Any]], id_path: str = "id"
 ) -> dict[str, str]:
     map = {d[property_name]: d[id_path] for d in data}
-    assert len(map) == len(data), f"property {property_name} is not unique"
+
+    if property_name != "email":
+        assert len(map) == len(data), f"property {property_name} is not unique"
 
     return map
 
@@ -115,12 +117,27 @@ async def get_project_name_id_map(
 
 
 async def get_person_email_id_map(
-    client: aiohttp.ClientSession, people_url: str
+    client: aiohttp.ClientSession,
+    people_url: str,
+    original_person_data: list[dict[str, Any]],
 ) -> dict[str, str]:
+    email_to_auth_user_id = {
+        d["microsoft_entra_oid"]: d["email"] for d in original_person_data
+    }
+
     async with client.get(people_url, params=NO_LIMIT_QUERY) as resp:
         people = await resp.json()
+
+    async with client.get(people_url.replace("people", "accounts")) as resp:
+        accounts = await resp.json()
+
     people = property_id_map("email", people)
     people = people | {email.lower(): id for email, id in people.items() if email}
+
+    for acc in accounts:
+        if email := email_to_auth_user_id.get(acc["auth_provider_user_id"]):
+            people[email] = acc["id"]
+            people[email.lower()] = acc["id"]
 
     return people
 
@@ -169,11 +186,9 @@ async def write_error(
         "readable_id", d.get("name", "ERROR")
     ),
 ):
-    error_subdir = error_dir / str(filename_generator(request))
-    error_subdir.mkdir(parents=True, exist_ok=True)
-
-    filename = len(list(error_subdir.iterdir()))
-    error_path = error_subdir / Path(f"{filename}.json")
+    error_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{filename_generator(request)}.json"
+    error_path = error_dir / filename
 
     try:
         response_body = await response.json()

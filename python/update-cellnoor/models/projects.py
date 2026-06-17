@@ -18,6 +18,7 @@ def _parse_row(row: dict[str, Any]):
     data["ended_at"] = datetime(
         year=2026, month=12, day=31, hour=23, minute=59, second=59, tzinfo=UTC
     ).isoformat()
+    data["members"] = []
 
     return data
 

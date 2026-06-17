@@ -19,6 +19,8 @@ def _parse_row(
     required_keys = {"readable_id", "name", "date_pooled"}
 
     data = {key: row[key] for key in required_keys if key in row}
+    # TODO
+    data["measurements"] = []
 
     # Assign basic information
     if pooled_at := row.get("date_pooled"):
@@ -26,26 +28,25 @@ def _parse_row(
 
     data["suspensions"] = []
     for susp in suspensions[data["readable_id"]]:
-        if multiplexing_tag_id := susp.get("multiplexing_tag_id"):
+        if multiplexing_tag_id := susp.get("tag_id"):
             if "ob" in str(multiplexing_tag_id).lower():
                 continue
 
             data["suspensions"].append(
                 {
                     "suspension_id": susp["id"],
-                    "tag_id": multiplexing_tags.get(multiplexing_tag_id),
+                    "tag_id": multiplexing_tag_id,
                 }
             )
+
+            data["multiplexing_tag_type"] = multiplexing_tags[multiplexing_tag_id][
+                "type"
+            ]
         else:
             data["suspensions"].append(susp["id"])
 
     if not data["suspensions"]:
         return None
-
-    if isinstance(data["suspensions"][0], dict):
-        data["multiplexing_type"] = "exogenous_tag"
-    else:
-        data["multiplexing_type"] = "genetic"
 
     data["preparers"] = [
         people[row[email_key]]
@@ -62,12 +63,15 @@ async def csvs_to_new_suspension_pools(
     suspension_pool_url: str,
     suspensions_url: str,
     multiplexing_tags_url: str,
+    original_person_data: list[dict[str, Any]],
     suspension_pool_data: list[dict[str, Any]],
     suspension_csv_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
         tasks = (
-            tg.create_task(get_person_email_id_map(client, people_url)),
+            tg.create_task(
+                get_person_email_id_map(client, people_url, original_person_data)
+            ),
             tg.create_task(client.get(suspension_pool_url, params=NO_LIMIT_QUERY)),
             tg.create_task(client.get(suspensions_url, params=NO_LIMIT_QUERY)),
             tg.create_task(client.get(multiplexing_tags_url)),
@@ -106,13 +110,13 @@ async def csvs_to_new_suspension_pools(
             suspension["pooled_into_id"] = pooled_into
 
             if multiplexing_tag := suspension_from_csv.get("multiplexing_tag_id"):
-                suspension["multiplexing_tag_id"] = multiplexing_tag
+                suspension["tag_id"] = multiplexing_tag
 
             pooled_suspension_list = grouped_suspensions[pooled_into]
             pooled_suspension_list.append(suspension)
 
     multiplexing_tags = await multiplexing_tags.json()
-    multiplexing_tags = {tag["tag_id"]: tag["id"] for tag in multiplexing_tags}
+    multiplexing_tags = {tag["tag_id"]: tag for tag in multiplexing_tags}
     new_suspension_pools = (
         _parse_row(
             row,

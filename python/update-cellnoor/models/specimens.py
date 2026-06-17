@@ -31,7 +31,10 @@ def _parse_row(
         for simple_key in ["name", "readable_id", "tissue"]
     }
 
-    data["project_id"] = projects.get(row["lab_name"], str(uuid.uuid7()))
+    # TODO: fill this in
+    data["measurements"] = []
+
+    data["project_id"] = projects.get(row["lab_name"])
 
     if submitter_email := row["submitter_email"]:
         data["submitted_by"] = people[submitter_email.lower()]
@@ -145,10 +148,13 @@ async def csv_to_new_specimens(
     people_url: str,
     project_url: str,
     specimen_url: str,
+    original_person_data: list[dict[str, Any]],
     data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people = tg.create_task(get_person_email_id_map(client, people_url))
+        people = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         projects = tg.create_task(get_project_name_id_map(client, project_url))
 
     people = people.result()

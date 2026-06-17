@@ -43,6 +43,9 @@ def _parse_suspension_row(
 
     data = {key: row[key] for key in ["readable_id"]}
 
+    # TODO: real measurements
+    data["measurements"] = []
+
     parent_specimen = specimens.get(
         row["parent_specimen_readable_id"], {"id": uuid.uuid7()}
     )
@@ -84,10 +87,13 @@ async def csv_to_new_suspensions(
     suspensions_url: str,
     multiplexing_tags_url: str,
     data: list[dict[str, Any]],
+    original_person_data: list[dict[str, Any]],
     id_key: str,
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people_task = tg.create_task(get_person_email_id_map(client, people_url))
+        people_task = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         specimens_task = tg.create_task(
             client.get(specimens_url, params=NO_LIMIT_QUERY)
         )
@@ -104,7 +110,7 @@ async def csv_to_new_suspensions(
     multiplexing_tags = await multiplexing_tags_task.result().json()
     specimens = {s["readable_id"]: s for s in specimens}
     pre_existing_suspensions = {s["readable_id"] for s in pre_existing_suspensions}
-    multiplexing_tags = {tag["tag_id"]: tag["id"] for tag in multiplexing_tags}
+    multiplexing_tags = {tag["tag_id"]: tag for tag in multiplexing_tags}
 
     new_suspensions = (
         _parse_suspension_row(

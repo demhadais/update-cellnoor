@@ -22,6 +22,8 @@ def _parse_row(
     data = {"readable_id": row["readable_id"]}
 
     data["cdna_id"] = cdna.get(row["cdna_readable_id"], uuid.uuid4())
+    # TODO
+    data["measurements"] = []
 
     data["preparers"] = [
         people[row[k]] for k in ["preparer_1_email", "preparer_2_email"] if k in row
@@ -66,9 +68,12 @@ async def csv_to_new_libraries(
     people_url: str,
     cdna_url: str,
     libraries_url: str,
+    original_person_data: list[dict[str, Any]],
 ) -> Generator[dict[str, Any]]:
     async with asyncio.TaskGroup() as tg:
-        people = tg.create_task(get_person_email_id_map(client, people_url))
+        people = tg.create_task(
+            get_person_email_id_map(client, people_url, original_person_data)
+        )
         cdna = tg.create_task(client.get(cdna_url, params=NO_LIMIT_QUERY))
         pre_existing_libraries = tg.create_task(
             client.get(libraries_url, params=NO_LIMIT_QUERY)
