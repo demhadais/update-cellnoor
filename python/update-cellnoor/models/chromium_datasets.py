@@ -70,9 +70,13 @@ async def _post_dataset(
 _CONTENT_TYPES = {"html": "text/html", "json": "application/json", "csv": "text/csv"}
 
 
-def _construct_multipart_form(dataset_id_and_path: tuple[str, Path]):
+def _construct_multipart_form(
+    dataset_id_and_path: tuple[str, Path], pre_existing_files: dict[str, set[str]]
+):
     dataset_id, path = dataset_id_and_path
     dataset_fileset = get_cellranger_output_files(path)
+
+    this_dataset_pre_existing_files = pre_existing_files[dataset_id]
 
     files = (
         (
@@ -80,6 +84,7 @@ def _construct_multipart_form(dataset_id_and_path: tuple[str, Path]):
             path.read_bytes(),
         )
         for filename, path in dataset_fileset.files
+        if not any(filename in f for f in this_dataset_pre_existing_files)
     )
 
     file_uploads = aiohttp.FormData(quote_fields=False, default_to_multipart=True)
@@ -133,14 +138,19 @@ async def upload_dataset_files(
     dataset_dir_map = {d.name: d for d in dataset_dirs}
 
     datasets_for_which_to_upload_files: list[tuple[str, Path]] = []
+    pre_existing_files: dict[str, set[str]] = {}
     for dataset_from_api in pre_existing_datasets:
-        if dataset_from_api["links"]["raw_files"]:
-            continue
+        if raw_files := dataset_from_api["links"]["raw_files"]:
+            pre_existing_files = pre_existing_files | {
+                dataset_from_api["id"]: {f for f in raw_files}
+            }
+
         dataset_dir = dataset_dir_map[dataset_from_api["name"]]
         datasets_for_which_to_upload_files.append((dataset_from_api["id"], dataset_dir))
 
     dataset_file_uploads = (
-        _construct_multipart_form(ds) for ds in datasets_for_which_to_upload_files
+        _construct_multipart_form(ds, pre_existing_files)
+        for ds in datasets_for_which_to_upload_files
     )
 
     # Do this sequentiall because that's fucking awesome and python definitely doesn't fucking suck
