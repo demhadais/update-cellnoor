@@ -141,9 +141,9 @@ async def upload_dataset_files(
     pre_existing_files: dict[str, set[str]] = {}
     for dataset_from_api in pre_existing_datasets:
         if raw_files := dataset_from_api["links"]["raw_files"]:
-            pre_existing_files = pre_existing_files | {
-                dataset_from_api["id"]: {f for f in raw_files}
-            }
+            pre_existing_files[dataset_from_api["id"]] = {f for f in raw_files}
+        else:
+            pre_existing_files[dataset_from_api["id"]] = set()
 
         dataset_dir = dataset_dir_map[dataset_from_api["name"]]
         datasets_for_which_to_upload_files.append((dataset_from_api["id"], dataset_dir))
