@@ -76,12 +76,17 @@ def _gem_pool_plexy(
     if gem_pool.get("suspension_pool_id") or gem_pool.get("suspension_id"):
         return "standard"
 
-    loading = gem_pool["loading"]
+    try:
+        loading = gem_pool["loading"]
+    except KeyError:
+        logging.warn(
+            f"GEM well {gem_pool['readable_id']} has none of `suspension_id`, `suspension_pool_id`, or `loading`"
+        )
+        return None
 
     if isinstance(loading, list):
         if loading[0].get("ocm_barcode_id"):
             return "on_chip_multiplexing"
-        return "standard"
 
     return None
 
