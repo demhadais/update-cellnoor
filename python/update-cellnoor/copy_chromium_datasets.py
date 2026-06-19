@@ -81,6 +81,7 @@ def _get_files_from_per_sample_outs(
     cellranger10_filenames = [
         "qc_library_metrics.csv",
         "qc_report.csv",
+        "qc_report.html",
         "qc_sample_metrics.csv",
     ]
     _qc_library_metrics, _qc_report, _qc_sample_metrics = [
