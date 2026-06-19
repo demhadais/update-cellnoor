@@ -88,7 +88,7 @@ async def csv_to_new_people(
         if not (
             p is None
             or (p.get("email") in pre_existing_people)
-            or (p.get("auth_provider_user_id") in pre_existing_people)
+            or (p.get("account", {}).get("microsoft_entra_oid") in pre_existing_people)
         )
     )
 
