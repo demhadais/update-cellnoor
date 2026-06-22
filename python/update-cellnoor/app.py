@@ -46,6 +46,9 @@ async def _post_many(
     async with asyncio.TaskGroup() as tg:
         if isinstance(url, str):
             for request_body in stripped_string_data:
+                if request_body.get("readable_id") == "M61":
+                    print(request_body)
+
                 task = tg.create_task(client.post(url, json=request_body))
                 responses.append((request_body, task))
         else:
