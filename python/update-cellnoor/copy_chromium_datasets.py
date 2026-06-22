@@ -38,6 +38,7 @@ class CellrangerOutputFiles:
     _metrics: list[Path]
     _qc_library_metrics: Path
     _qc_report: Path
+    _qc_report_html: Path
     _qc_sample_metrics: Path
     _web_summaries: list[Path]
 
@@ -47,6 +48,7 @@ class CellrangerOutputFiles:
             *self._metrics,
             self._qc_library_metrics,
             self._qc_report,
+            self._qc_report_html,
             self._qc_sample_metrics,
             *self._web_summaries,
         ]
@@ -84,13 +86,14 @@ def _get_files_from_per_sample_outs(
         "qc_report.html",
         "qc_sample_metrics.csv",
     ]
-    _qc_library_metrics, _qc_report, _qc_sample_metrics = [
+    _qc_library_metrics, _qc_report, _qc_report_html, _qc_sample_metrics = [
         cellranger_directory / p for p in cellranger10_filenames
     ]
 
     return CellrangerOutputFiles(
         _qc_library_metrics=_qc_library_metrics,
         _qc_report=_qc_report,
+        _qc_report_html=_qc_report_html,
         _qc_sample_metrics=_qc_sample_metrics,
         _metrics=[
             sample_dir / METRICS_SUMMARY_FILENAMES[cellranger_directory.name]
@@ -109,7 +112,8 @@ def _get_files_from_cellranger_directory(
 
     return CellrangerOutputFiles(
         _qc_library_metrics=cellranger_directory / "qc_library_metrics.csv",
-        _qc_report=cellranger_directory / "qc_report.html",
+        _qc_report_html=cellranger_directory / "qc_report.html",
+        _qc_report=cellranger_directory / "qc_report.csv",
         _qc_sample_metrics=cellranger_directory / "qc_sample_metrics.csv",
         _metrics=[
             cellranger_directory / METRICS_SUMMARY_FILENAMES[cellranger_directory.name]
@@ -176,6 +180,7 @@ def _copy_dataset_directory(source_dataset_directory: Path, destination: Path):
         *fileset._metrics,  # pyright: ignore[reportPrivateUsage]
         fileset._qc_library_metrics,  # pyright: ignore[reportPrivateUsage]
         fileset._qc_report,  # pyright: ignore[reportPrivateUsage]
+        fileset._qc_report_html,  # pyright: ignore[reportPrivateUsage]
         fileset._qc_sample_metrics,  # pyright: ignore[reportPrivateUsage]
         *fileset._web_summaries,  # pyright: ignore[reportPrivateUsage]
     ]:

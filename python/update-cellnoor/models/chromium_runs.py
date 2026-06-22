@@ -49,7 +49,10 @@ def _parse_gem_pools(
         else:
             parsed_loadings.append(parsed_loading)
 
-    n = len(loadings)
+    n = len(parsed_loadings)
+
+    if gems_readable_id == "G0118":
+        print(parsed_loadings)
 
     if n == 1:
         parsed_loading = parsed_loadings[0]
@@ -102,6 +105,8 @@ def _plexy(
     if len(plexies) == 1:
         return plexies.pop()  # pyright: ignore
     else:
+        for well in gem_pools:
+            well["plexy"] = _gem_pool_plexy(well)
         return "mixed"
 
 
