@@ -34,7 +34,8 @@ def _parse_row(
     # TODO: fill this in
     data["measurements"] = []
 
-    data["project_id"] = projects.get(row["lab_name"])
+    if lab_name := row.get("lab_name"):
+        data["project_id"] = projects.get(lab_name)
 
     if submitter_email := row["submitter_email"]:
         data["submitted_by"] = people[submitter_email.lower()]
@@ -56,11 +57,11 @@ def _parse_row(
             datetime.fromisoformat(data["returned_at"]) + timedelta(hours=1)
         ).isoformat()
 
-    if row["species"] == "Homo sapiens + Mus musculus (PDX)":
+    if row.get("species") == "Homo sapiens + Mus musculus (PDX)":
         data["species"] = "homo_sapiens"
         data["host_species"] = "mus_musculus"
-    elif row["species"]:
-        data["species"] = to_snake_case(row["species"])
+    elif species := row.get("species"):
+        data["species"] = to_snake_case(species)
 
     data["additional_data"] = {
         key: row[key]
