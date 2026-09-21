@@ -127,7 +127,7 @@ def _parse_chromium_run(
         data["run_at"] = run_at
 
     data["run_by"] = people.get(chromium_run[0]["chip_run_by"])
-    data["assay_id"] = assays[chromium_run[0]["assay"]]
+    data["assay_id"] = assays.get(chromium_run[0]["assay"])
     data["succeeded"] = True
 
     gem_pools = []
