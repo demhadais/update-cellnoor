@@ -52,6 +52,29 @@
       ]
     },
     {
+      "name": "Epi Multiome ATAC + Gene Expression",
+      "chemistry_version": "v1",
+      "protocol_url": "https://www.10xgenomics.com/support/epi-multiome/documentation/steps/library-prep/gem-x-epi-multiome-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger-arc count"],
+      "chromium_chip": "GEM-X MO",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "chromatin_accessibility",
+          "index_kit": "NA",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 20
+        },
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
       "name": "Flex Gene Expression",
       "chemistry_version": "v1 - GEM-X",
       "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-gene-expression-reagent-kit-for-multiplex-samples",
