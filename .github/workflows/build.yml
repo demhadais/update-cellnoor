@@ -5,29 +5,27 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "packages/download-scbl-excel-workbooks/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
 
       - name: Build
-        working-directory: packages/download-scbl-excel-workbooks
+        working-directory: update-cellnoor
         run: |
           bun install
-          bun build --compile --minify --sourcemap --bytecode --format esm index.ts --outfile download-scbl-excel-workbooks
+          bun build --compile --minify --sourcemap --bytecode --format esm index.ts --outfile update-cellnoor
 
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
-        working-directory: packages/download-scbl-excel-workbooks
+        working-directory: update-cellnoor
         run: |
           version=$(jq -r '.version' package.json)
-          gh release create download-scbl-excel-workbooks-$version download-scbl-excel-workbooks
+          gh release create update-cellnoor-$version update-cellnoor

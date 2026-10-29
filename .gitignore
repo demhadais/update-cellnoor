@@ -38,3 +38,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 !examples/input-workbooks/Chromium.xlsx
 !examples/input-workbooks/People and Institutions.xlsx
 !examples/input-workbooks/Sample Inventory.xlsx
+
+# Test data that's actually real production data
+test-data

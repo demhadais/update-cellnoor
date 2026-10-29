@@ -1,28 +1,36 @@
 import type { SheetSpecification } from "./config.ts";
 import * as xlsx from "xlsx";
+import { withCanonicalColumns } from "./rows.ts";
 
-export async function exportWorkbook(
-  rawFile: ReadableStream,
-  sheetSpecifications: SheetSpecification[],
+export type RawRow = Record<string, unknown>;
+
+export async function exportWorkbook<
+  Sheets extends Record<string, SheetSpecification>,
+>(
+  rawFile: Uint8Array,
+  sheetSpecifications: Sheets,
   outputDir: string,
-) {
-  const workbook = xlsx.read(await rawFile.bytes(), {
+): Promise<{ [K in keyof Sheets]: RawRow[] }> {
+  const workbook = xlsx.read(rawFile, {
     dense: true,
     cellDates: true,
   });
 
-  const exports = sheetSpecifications.map((spec) =>
-    exportToJson(workbook, spec, outputDir)
+  const exports = Object.entries(sheetSpecifications).map(
+    async ([key, spec]) =>
+      [key, await exportToJson(workbook, spec, outputDir)] as const,
   );
 
-  await Promise.all(exports);
+  return Object.fromEntries(await Promise.all(exports)) as {
+    [K in keyof Sheets]: RawRow[];
+  };
 }
 
 async function exportToJson(
   workbook: xlsx.WorkBook,
-  { name, header, exclude_row_fn }: SheetSpecification,
+  { name, header, exclude_row_fn, columns }: SheetSpecification,
   outputDir: string,
-) {
+): Promise<RawRow[]> {
   const sheet = workbook.Sheets[name];
 
   if (!sheet) {
@@ -31,7 +39,7 @@ async function exportToJson(
     );
   }
 
-  let converted: Record<string, unknown>[] = xlsx.utils.sheet_to_json(sheet, {
+  let converted: RawRow[] = xlsx.utils.sheet_to_json(sheet, {
     range: header,
   });
 
@@ -41,4 +49,6 @@ async function exportToJson(
 
   const outputPath = `${outputDir}/${name}.json`;
   await Bun.file(outputPath).write(JSON.stringify(converted));
+
+  return converted.map((row) => withCanonicalColumns(row, columns));
 }
