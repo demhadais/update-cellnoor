@@ -1,0 +1,5 @@
+GEMs ID,Experiment ID,cDNA/Pre-amplification Product ID,Is Pre-amp Product,Library Type to be Built,Volume (µl),Number of Amplification Cycles,Tapestation Concentration (pg/µl),Tapestation Total Yield (ng),Tapestation Gate Range Minimum (bp),Tapestation Gate Range Maximum (bp),Fails QC,Failure Notes,Date Prepared,Storage Location,Preparer Email,Preparer 2,General Notes,Passing QC,Number of libraries built from this cDNA
+G0001,25E1,25E1-C1,TRUE,Gene Expression Flex,100,7,,0,250,5000,FALSE,,2025-02-07,,ahmed.said@jax.org,,,25E1-C1,
+G0078,25E32,25E32-C1,FALSE,Gene Expression,40,11,182500,7300,250,5000,FALSE,,2025-05-16,,ahmed.said@jax.org,,,25E32-C1,
+G0079,25E32,25E32-C2,FALSE,Gene Expression,40,11,186000,7440,250,5000,FALSE,,2025-05-16,,ahmed.said@jax.org,,,25E32-C2,
+G0091,25E38,25E38-C2,FALSE,Gene Expression,40,11,20700,828,250,5000,FALSE,,2025-05-27,,ahmed.said@jax.org,,,25E38-C2,

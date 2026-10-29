@@ -1,0 +1,5 @@
+GEMs ID,Assay,Date Chip Run,Chromium Run ID,Chip Run By,Chip Lot Number,Gel Beads Lot Number,GEMs Kit Lot Number,Multiome Amp Kit A,Flex GEMs & Library Kit Lot Number,Chromium Next GEM Single Cell Multiome ATAC Kit A,Chromium Next GEM Single Cell Multiome Amp Kit A,Assigned GEMs,,Chromium Run IDs
+G0001,Multiplex Flex Gene Expression v1 (Next GEM),2025-02-06,CR1,ahmed.said@jax.org,204337,2302597,,,204581,,,G0001,,CR1
+G0078,Single Cell 3' Gene Expression OCM v4,2025-05-13,CR28,ahmed.said@jax.org,176299,205602,205902,,,,,G0078,,CR28
+G0079,Single Cell 3' Gene Expression OCM v4,2025-05-13,CR28,ahmed.said@jax.org,176299,205602,205902,,,,,G0079,,CR33
+G0091,Single Cell 3' Gene Expression v4,2025-05-21,CR33,ahmed.said@jax.org,178435,204372,205902,,,,,G0091,,
