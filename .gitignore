@@ -32,3 +32,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Workbooks
+*.xlsx
+!examples/input-workbooks/Chromium.xlsx
+!examples/input-workbooks/People and Institutions.xlsx
+!examples/input-workbooks/Sample Inventory.xlsx

@@ -15,6 +15,7 @@
   "dependencies": {
     "@azure/identity": "^4.14.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "cellnoor": "https://github.com/thejacksonlaboratory/cellnoor",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.6.7"
   }
