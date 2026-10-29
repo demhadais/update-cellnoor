@@ -1,19 +1,21 @@
 {
-  "name": "download-scbl-excel-workbooks",
-  "version": "1.0.5",
+  "name": "update-cellnoor",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "typecheck": "bun check"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^6.0.3"
+    "typescript": "^7"
   },
   "dependencies": {
-    "@azure/identity": "^4.13.1",
+    "@azure/identity": "^4.14.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   }
 }

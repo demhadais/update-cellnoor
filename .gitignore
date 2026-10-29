@@ -1,12 +1,34 @@
-# Default directory to which `download-scbl-excel-workbooks` downloads files
-scbl-workbooks
+# dependencies (bun install)
+node_modules
 
-# Compiled outputs of the above program
-*.bun-build
-# Default compiled artifact name
-index
-*.map
-# Renamed version (as found in workflow)
-download-scbl-excel-workbooks
-# Reinclude the actual source-code
-!download-scbl-excel-workbooks/
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
