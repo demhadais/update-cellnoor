@@ -1,9 +1,4 @@
-import {
-  writeError,
-  type Api,
-  type FetchResult,
-  type Schemas,
-} from "./api.ts";
+import { writeError, type Api, type FetchResult, type Schemas } from "./api.ts";
 
 export type SeedData = {
   single_index_set_urls: string[];

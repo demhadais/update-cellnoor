@@ -130,9 +130,9 @@ describe("buildSuspension", () => {
   };
 
   test("a missing creation date falls back to the specimen's received date", () => {
-    expect(buildSuspension(suspension({ created_at: null }), ids).created_at).toBe(
-      "2025-01-01T00:00:00.000Z",
-    );
+    expect(
+      buildSuspension(suspension({ created_at: null }), ids).created_at,
+    ).toBe("2025-01-01T00:00:00.000Z");
   });
 
   test("a target cell recovery computed by a formula is sent as an integer", () => {

@@ -140,7 +140,12 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
     try {
       measurements = buildMeasurements(item, body);
     } catch (error) {
-      await reportLocalError(api, `${identify(item)} measurements`, item, error);
+      await reportLocalError(
+        api,
+        `${identify(item)} measurements`,
+        item,
+        error,
+      );
     }
 
     bodies.push({ ...body, measurements });

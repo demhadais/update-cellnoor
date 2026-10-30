@@ -78,7 +78,8 @@ export async function syncProjects(
     }
 
     await syncIds(api, project.name, members, current.members, {
-      add: (ids) => api.client.POST("/projects/{id}/people", { params, body: ids }),
+      add: (ids) =>
+        api.client.POST("/projects/{id}/people", { params, body: ids }),
       remove: (ids) =>
         api.client.DELETE("/projects/{id}/people", { params, body: ids }),
     });

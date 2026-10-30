@@ -91,7 +91,11 @@ export function buildCdna(
   row: CdnaRow,
   ids: { people: Map<string, string>; gemWells: Map<string, string> },
 ): WithoutMeasurements<NewCdna> {
-  const libraryType = translate(LIBRARY_TYPES, row.library_type, "library type");
+  const libraryType = translate(
+    LIBRARY_TYPES,
+    row.library_type,
+    "library type",
+  );
   const preparers = row.preparers.map((e) => lookup(ids.people, e, "person"));
 
   const libraryTypeFields =
@@ -185,7 +189,8 @@ async function updateCdna(
     cdna.measurements,
     current.measurements,
     {
-      add: (body) => api.client.POST("/cdna/{id}/measurements", { params, body }),
+      add: (body) =>
+        api.client.POST("/cdna/{id}/measurements", { params, body }),
       remove: (body) =>
         api.client.DELETE("/cdna/{id}/measurements", { params, body }),
     },

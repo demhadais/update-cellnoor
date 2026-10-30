@@ -126,7 +126,11 @@ export function typeFields(
 ): SpecimenTypeFields {
   const type = translate(SPECIMEN_TYPES, row.type, "specimen type");
   const preservation = row.preservation_method
-    ? translate(PRESERVATION_METHODS, row.preservation_method, "preservation method")
+    ? translate(
+        PRESERVATION_METHODS,
+        row.preservation_method,
+        "preservation method",
+      )
     : undefined;
 
   switch (type) {
@@ -195,7 +199,8 @@ export function buildSpecimen(
     project_id: lookup(ids.projects, row.project_id, "project"),
     received_at: row.received_at,
     returned_at: row.returned_at,
-    returned_by: row.returned_by && lookup(ids.people, row.returned_by, "person"),
+    returned_by:
+      row.returned_by && lookup(ids.people, row.returned_by, "person"),
     tissue: row.tissue,
     additional_data: notes(row.notes),
     ...speciesFields(row.species),
@@ -239,7 +244,10 @@ export async function syncSpecimens(
   const existingByReadableId = new Map(existing.map((s) => [s.readable_id, s]));
 
   const references = new Map(
-    existing.map((s) => [s.readable_id, { id: s.id, received_at: s.received_at }]),
+    existing.map((s) => [
+      s.readable_id,
+      { id: s.id, received_at: s.received_at },
+    ]),
   );
 
   for (const specimen of specimens) {

@@ -116,7 +116,9 @@ export async function syncPeople(
 
     // The web app sets the email of people with a Microsoft account when they
     // sign in
-    const body = microsoftEntraOid ? { ...update, email: current.email } : update;
+    const body = microsoftEntraOid
+      ? { ...update, email: current.email }
+      : update;
 
     if (!matches(body, current)) {
       await send(

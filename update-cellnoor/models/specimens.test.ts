@@ -49,7 +49,11 @@ describe("typeFields", () => {
 
   test("an unknown type is rejected", () => {
     expect(() =>
-      typeFields({ type: "Slide", preservation_method: null, embedded_in: null }),
+      typeFields({
+        type: "Slide",
+        preservation_method: null,
+        embedded_in: null,
+      }),
     ).toThrow("unknown specimen type 'Slide'");
   });
 });

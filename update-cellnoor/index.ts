@@ -141,7 +141,13 @@ async function readWorkbooks(
 
   if (localPaths.some(([_, path]) => path)) {
     const reads = localPaths.flatMap(([key, path]) =>
-      path ? [Bun.file(path).bytes().then((bytes) => [key, bytes] as const)] : [],
+      path
+        ? [
+            Bun.file(path)
+              .bytes()
+              .then((bytes) => [key, bytes] as const),
+          ]
+        : [],
     );
     return Object.fromEntries(await Promise.all(reads));
   }

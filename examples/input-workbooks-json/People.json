@@ -1,1 +1,11 @@
-[{"First Name":"Ahmed","Last Name":"Said","Email":"ahmed.said@jax.org","Institution Name":"JAX-GM","Is Staff":true,"Full Name":"Ahmed Said","microsoft_entra_oid":"08b6b82e-b90c-4ac4-a037-ce8bde254a24"}]
+[
+  {
+    "First Name": "Ahmed",
+    "Last Name": "Said",
+    "Email": "ahmed.said@jax.org",
+    "Institution Name": "JAX-GM",
+    "Is Staff": true,
+    "Full Name": "Ahmed Said",
+    "microsoft_entra_oid": "08b6b82e-b90c-4ac4-a037-ce8bde254a24"
+  }
+]

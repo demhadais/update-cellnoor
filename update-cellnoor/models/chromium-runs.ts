@@ -118,7 +118,10 @@ export function buildGemWell(
         );
       }
       const entity = loadedEntity(row, ids);
-      return barcodeIds.map((ocm_barcode_id) => ({ ocm_barcode_id, ...entity }));
+      return barcodeIds.map((ocm_barcode_id) => ({
+        ocm_barcode_id,
+        ...entity,
+      }));
     });
 
     return {
@@ -187,7 +190,9 @@ export function buildChromiumRun(
     run_by: lookup(ids.people, first.run_by, "person"),
     succeeded: !rows.some((row) => row.failed),
     additional_data: {
-      ilab_request_ids: [...new Set(rows.flatMap((row) => row.ilab_request_ids))],
+      ilab_request_ids: [
+        ...new Set(rows.flatMap((row) => row.ilab_request_ids)),
+      ],
     },
     ...runGemWells(wells),
   };

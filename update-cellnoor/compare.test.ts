@@ -10,15 +10,15 @@ describe("equivalent", () => {
   });
 
   test("timestamps are compared as instants", () => {
-    expect(
-      equivalent("2025-02-06T00:00:00.000Z", "2025-02-06T00:00:00Z"),
-    ).toBe(true);
+    expect(equivalent("2025-02-06T00:00:00.000Z", "2025-02-06T00:00:00Z")).toBe(
+      true,
+    );
     expect(
       equivalent("2025-02-06T00:00:00.000Z", "2025-02-06T01:00:00+01:00"),
     ).toBe(true);
-    expect(
-      equivalent("2025-02-06T00:00:00.000Z", "2025-02-07T00:00:00Z"),
-    ).toBe(false);
+    expect(equivalent("2025-02-06T00:00:00.000Z", "2025-02-07T00:00:00Z")).toBe(
+      false,
+    );
   });
 
   test("numbers are compared at the API's 32-bit precision", () => {
@@ -28,10 +28,16 @@ describe("equivalent", () => {
 
   test("nested objects and arrays are compared deeply", () => {
     expect(
-      equivalent({ data: { range: [150, 1000] } }, { data: { range: [150, 1000] } }),
+      equivalent(
+        { data: { range: [150, 1000] } },
+        { data: { range: [150, 1000] } },
+      ),
     ).toBe(true);
     expect(
-      equivalent({ data: { range: [150, 1000] } }, { data: { range: [1000, 150] } }),
+      equivalent(
+        { data: { range: [150, 1000] } },
+        { data: { range: [1000, 150] } },
+      ),
     ).toBe(false);
     expect(equivalent({ notes: "a" }, { notes: "a", other: 1 })).toBe(false);
   });
@@ -50,7 +56,10 @@ describe("diff", () => {
   test("treats lists as multisets", () => {
     const { missing, extra } = diff(
       [{ v: 1 }, { v: 1 }, { v: 2 }],
-      [{ id: "a", v: 1 }, { id: "b", v: 3 }],
+      [
+        { id: "a", v: 1 },
+        { id: "b", v: 3 },
+      ],
       matches,
     );
     expect(missing).toEqual([{ v: 1 }, { v: 2 }]);
@@ -60,6 +69,9 @@ describe("diff", () => {
 
 describe("unique", () => {
   test("removes structurally identical items", () => {
-    expect(unique([{ a: 1 }, { a: 1 }, { a: 2 }])).toEqual([{ a: 1 }, { a: 2 }]);
+    expect(unique([{ a: 1 }, { a: 1 }, { a: 2 }])).toEqual([
+      { a: 1 },
+      { a: 2 },
+    ]);
   });
 });

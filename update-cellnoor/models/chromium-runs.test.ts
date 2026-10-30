@@ -47,12 +47,19 @@ function loading(overrides: Partial<GemsSuspensionRow>): GemsSuspensionRow {
 
 describe("buildGemWell", () => {
   test("an OCM well gets one loading per barcode, without duplicate rows", () => {
-    const row = loading({ suspension_id: "25E32-S6", ocm_barcode_id: ["OB3+OB4"] });
+    const row = loading({
+      suspension_id: "25E32-S6",
+      ocm_barcode_id: ["OB3+OB4"],
+    });
 
     expect(
       buildGemWell(
         "G0079",
-        [row, row, loading({ suspension_id: "25E32-S1", ocm_barcode_id: ["OB1"] })],
+        [
+          row,
+          row,
+          loading({ suspension_id: "25E32-S1", ocm_barcode_id: ["OB1"] }),
+        ],
         ids,
       ),
     ).toEqual({
@@ -106,7 +113,10 @@ describe("buildGemWell", () => {
 
 describe("buildChromiumRun", () => {
   const ocmRows = new Map([
-    ["G0078", [loading({ suspension_id: "25E32-S1", ocm_barcode_id: ["OB1"] })]],
+    [
+      "G0078",
+      [loading({ suspension_id: "25E32-S1", ocm_barcode_id: ["OB1"] })],
+    ],
     [
       "G0079",
       [
