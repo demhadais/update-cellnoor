@@ -2,6 +2,7 @@
   "name": "update-cellnoor",
   "module": "index.ts",
   "version": "0.1.0",
+  "repository": "github:demhadais/update-cellnoor",
   "author": {
     "name": "Ahmed Said",
     "email": "ahmed.said@jax.org",
@@ -10,10 +11,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "typecheck": "bun check"
+    "typecheck": "bun check",
+    "predist": "bun install",
+    "dist": "bun dist.ts"
+  },
+  "bin": {
+    "update-cellnoor": "index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "bun": "1"
   },
   "peerDependencies": {
     "typescript": "^7"
