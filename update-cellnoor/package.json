@@ -1,0 +1,29 @@
+{
+  "name": "update-cellnoor",
+  "module": "index.ts",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ahmed Said",
+    "email": "ahmed.said@jax.org",
+    "url": "https://github.com/demhadais"
+  },
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "bun check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.14.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "cellnoor": "https://github.com/thejacksonlaboratory/cellnoor",
+    "openapi-fetch": "^0.17.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "^4.6.7"
+  }
+}

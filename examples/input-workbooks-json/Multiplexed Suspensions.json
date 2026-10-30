@@ -1,0 +1,23 @@
+[
+  {
+    "Experiment ID": "25E1",
+    "Multiplexed Suspension (Pool) ID": "M1",
+    "Multiplexed Suspension (Pool) Name": "DO EB Pool 10",
+    "Multiplexing Tag Type": "Flex Barcode",
+    "Genetic Multiplexing": false,
+    "Raw Targeted Cell Recovery": 16000,
+    "Targeted Cell Recovery": 16000,
+    "Pre-storage Cell/Nucleus Concentration (cell-nucleus/ml)": 1740000,
+    "Pre-storage Volume (µl)": 750,
+    "Pre-storage Total Number of Cells/Nuclei": 1305000,
+    "Cell/Nucleus Concentration (cell-nucleus/mL)": 3690000,
+    "Volume (µL)": 500,
+    "Total Number of Cells/Nuclei": 1845000,
+    "Cell Viability (%)": 0,
+    "Average Cell/Nucleus Diameter (µm)": 11.3,
+    "Date Child Suspensions Pooled": "2025-02-06T05:00:00.000Z",
+    "Preparer 1 Email": "ahmed.said@jax.org",
+    "Preparer 2": "ahmed.said@jax.org",
+    "Claimed": true
+  }
+]

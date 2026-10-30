@@ -1,0 +1,312 @@
+# A sample configuration that should just work
+microsoft_tenant_id = ""
+microsoft_client_id = ""
+microsoft_client_secret = ""
+microsoft_sharepoint_site_id = ""
+api_base_url = "https://api.cellnoor.jax.org"
+files_base_url = "https://cellnoor.jax.org"
+api_key = ""
+
+# People, institutions, and labs
+[workbooks.people_and_institutions]
+file_path = "LIMS and Tracking/Tracking Sheets - In Use/People and Institutions.xlsx"
+
+[workbooks.people_and_institutions.sheets.institutions]
+name = "Institutions"
+
+[workbooks.people_and_institutions.sheets.institutions.columns]
+name = "Name"
+microsoft_entra_tenant_id = "microsoft_entra_tenant_id"
+
+[workbooks.people_and_institutions.sheets.people]
+name = "People"
+exclude_row_fn = "(row) => !row['Full Name'] || row['Full Name'] === ' '"
+
+[workbooks.people_and_institutions.sheets.people.columns]
+name = "Full Name"
+email = "Email"
+orcid = "ORCID"
+is_staff = "Is Staff"
+microsoft_entra_oid = "microsoft_entra_oid"
+
+[workbooks.people_and_institutions.sheets.labs]
+name = "Labs"
+
+[workbooks.people_and_institutions.sheets.labs.columns]
+name = "Name"
+members = ["PI Email"]
+
+
+# Specimens
+[workbooks.sample_inventory]
+file_path = "LIMS and Tracking/Tracking Sheets - In Use/Sample Inventory.xlsx"
+
+[workbooks.sample_inventory.sheets.specimens]
+name = "Specimens"
+exclude_row_fn = "(row) => !row['ID'] || !row['Submitter Email'] || new Set(['25SP116', '25SP117', '25SP1663', '25SP1664', '25SP1665', '25SP1666', '25SP1667', '25SP1668', '25SP1669', '25SP1670', '25SP1671', '25SP1672', '25SP1673', '25SP1674', '25SP1675', '25SP1676', '25SP1677', '25SP1678', '25SP1679', '25SP1680', '25SP1681', '25SP1682', '25SP1683', '25SP1684', '25SP1782', '25SP1783', '25SP1784', '25SP1785', '25SP1786', '25SP1787', '25SP1788', '25SP1789', '25SP1790', '25SP1791', '25SP1792', '25SP1793', '26SP0095', '26SP0096', '26SP0097', '26SP0098', '26SP0099', '26SP0100', '26SP0101', '26SP0102', '26SP0103', '26SP0104', '26SP0105', '26SP0106', '26SP0107', '26SP0108', '26SP0109']).has(row['ID'])"
+
+[workbooks.sample_inventory.sheets.specimens.columns]
+readable_id = "ID"
+name = "Specimen Name"
+submitted_by = "Submitter Email"
+project_id = "Sample Submitting Lab"
+received_at = "Date Received"
+returned_at = "Date Returned"
+returned_by = "Returned By"
+type = "Type"
+preservation_method = "Preservation Method"
+embedded_in = "Embedding Matrix"
+species = "Species"
+tissue = "Tissue"
+notes = "Notes"
+
+[workbooks.sample_inventory.sheets.qc_measurements]
+name = "QC Measurements"
+exclude_row_fn = "(row) => !row['Specimen ID']"
+
+[workbooks.sample_inventory.sheets.qc_measurements.columns]
+rin = "RIN"
+dv200 = "DV200"
+instrument_name = "Acquisition Instrument"
+measured_by = "Measured By"
+measured_at = "Date of Measurement"
+
+
+# Chromium
+[workbooks.chromium]
+file_path = "LIMS and Tracking/Tracking Sheets - In Use/Chromium.xlsx"
+
+[workbooks.chromium.sheets.suspensions]
+name = "Suspensions"
+header = 1
+exclude_row_fn = "(row) => !row['Suspension ID'] || row['Suspension ID'] === '0' || !row['Specimen ID']"
+
+[workbooks.chromium.sheets.suspensions.columns]
+readable_id = "Suspension ID"
+specimen_id = "Specimen ID"
+content = "Cellular Material"
+created_at = "Date Created from Specimen"
+lysis_duration_minutes = "Lysis Duration (Nuclei Only) (min)"
+target_cell_recovery = "Targeted Cell Recovery"
+preparers = ["Preparer 1 Email", "Preparer 2"]
+notes = "Notes"
+counting_method = "Counting Method"
+multiplexing_tag_id = "Multiplexing Tag ID"
+customer_measured_by = "Submitter Email"
+customer_concentration = "Customer Cell/Nucleus Concentration (cell-nucleus/ml)"
+customer_volume = "Customer Volume (µl)"
+customer_viability = "Customer Cell Viability (%)"
+concentration = "SCBL Cell/Nucleus Concentration (cell-nucleus/ml)"
+volume = "SCBL Volume (µL)"
+viability = "SCBL Cell VIability (%)"
+mean_diameter = "SCBL Average Cell/Nucleus Diameter (µm)"
+adjusted_concentration = "SCBL Cell/Nucleus Concentration (post-adjustment) (cell-nucleus/ml)"
+adjusted_volume = "SCBL Volume (post-adjustment) (µL)"
+adjusted_viability = "SCBL Cell Viability (post-adjustment) (%)"
+adjusted_mean_diameter = "SCBL Average Cell/Nucleus Diameter (post-adjustment) (µm)"
+post_hybridization_concentration = "Post-hybridization Cell/Nucleus Concentration (cell-nucleus/ml)"
+post_hybridization_volume = "Post-hybridization Volume (µL)"
+post_hybridization_mean_diameter = "SCBL Post-hybridization Average Cell/Nucleus Diameter (µm)"
+
+[workbooks.chromium.sheets.multiplexed_suspensions]
+name = "Multiplexed Suspensions"
+header = 1
+exclude_row_fn = "(row) => !row['Experiment ID']"
+
+[workbooks.chromium.sheets.multiplexed_suspensions.columns]
+readable_id = "Multiplexed Suspension (Pool) ID"
+name = "Multiplexed Suspension (Pool) Name"
+multiplexing_tag_type = "Multiplexing Tag Type"
+pooled_at = "Date Child Suspensions Pooled"
+preparers = ["Preparer 1 Email", "Preparer 2"]
+notes = "Notes"
+pre_storage_concentration = "Pre-storage Cell/Nucleus Concentration (cell-nucleus/ml)"
+pre_storage_volume = "Pre-storage Volume (µl)"
+concentration = "Cell/Nucleus Concentration (cell-nucleus/mL)"
+volume = "Volume (µL)"
+viability = "Cell Viability (%)"
+mean_diameter = "Average Cell/Nucleus Diameter (µm)"
+
+[workbooks.chromium.sheets.gems]
+name = "GEMs"
+exclude_row_fn = "(row) => !row['Chromium Run ID'] || new Set(['G0072', 'G0073']).has(row['GEMs ID'])"
+
+[workbooks.chromium.sheets.gems.columns]
+readable_id = "Chromium Run ID"
+gem_well_readable_id = "GEMs ID"
+assay_id = "Assay"
+run_at = "Date Chip Run"
+run_by = "Chip Run By"
+
+[workbooks.chromium.sheets.gems_suspensions]
+name = "GEMs-Suspensions"
+exclude_row_fn = "(row) => !row['GEMs ID']"
+
+[workbooks.chromium.sheets.gems_suspensions.columns]
+suspension_id = "Suspension ID"
+suspension_pool_id = "Multiplexed Suspension ID"
+ocm_barcode_id = ["Tag ID", "OCM Barcode ID (if suspension pool)"]
+failed = "Clog/Wetting Failure"
+ilab_request_ids = ["iLab Request ID"]
+
+[workbooks.chromium.sheets.cdna]
+name = "cDNA"
+exclude_row_fn = "(row) => !row['GEMs ID'] || new Set(['25E28-C1', '25E28-C2', '25E103-C3', '25E103-C4']).has(row['cDNA/Pre-amplification Product ID'])"
+
+[workbooks.chromium.sheets.cdna.columns]
+readable_id = "cDNA/Pre-amplification Product ID"
+gem_well_id = "GEMs ID"
+library_type = "Library Type to be Built"
+n_amplification_cycles = "Number of Amplification Cycles"
+prepared_at = "Date Prepared"
+preparers = ["Preparer Email", "Preparer 2"]
+notes = "General Notes"
+concentration = "Tapestation Concentration (pg/µl)"
+sizing_range_minimum = "Tapestation Gate Range Minimum (bp)"
+sizing_range_maximum = "Tapestation Gate Range Maximum (bp)"
+
+[workbooks.chromium.sheets.libraries]
+name = "Libraries"
+exclude_row_fn = "(row) => !row['Pre-amplified/cDNA ID'] || new Set(['25E28-L1', '25E28-L2']).has(row['Library ID'])"
+
+[workbooks.chromium.sheets.libraries.columns]
+readable_id = "Library ID"
+cdna_id = "Pre-amplified/cDNA ID"
+index_set_name = "Full Index Set Name"
+number_of_sample_index_pcr_cycles = "Number of SI PCR Cycles"
+target_reads_per_cell = "Target Reads Per Cell (K)"
+prepared_at = "Date Prepared"
+preparers = ["Preparer 1 Email", "Preparer 2 Email"]
+notes = "General Notes"
+concentration = "Tapestation Concentration (pg/µl)"
+mean_size_bp = "TapeStation Mean Library Size (bp)"
+sizing_range_minimum = "Tapestation Gate Range Minimum (bp)"
+sizing_range_maximum = "Tapestation Gate Range Maximum (bp)"
+qubit_concentration = "Qubit Concentration (ng/µL)"
+
+
+[assay_map."Single Cell ATAC v2"]
+name = "Epi ATAC"
+library_types = ["chromatin_accessibility"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v2"
+chromium_chip = "H"
+
+[assay_map."Single Cell Multiome ATAC + Gene Expression v1"]
+name = "Epi Multiome ATAC + Gene Expression"
+library_types = ["chromatin_accessibility", "gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1"
+chromium_chip = "J"
+
+[assay_map."Multiplex Flex Gene Expression v1 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "flex_barcode"
+chemistry_version = "v1 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Multiplex Flex Gene Expression v2 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "flex_oligonucleotide_barcode"
+chemistry_version = "v2 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Singleplex Flex Gene Expression v1 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Singleplex Flex Gene Expression v2 (GEM-X)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v2 - GEM-X"
+chromium_chip = "GEM-X FX"
+
+[assay_map."Multiplex Flex Gene Expression v1 (Next GEM)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "flex_barcode"
+chemistry_version = "v1 - Next GEM"
+chromium_chip = "Q"
+
+[assay_map."Singleplex Flex Gene Expression v1 (Next GEM)"]
+name = "Flex Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1 - Next GEM"
+chromium_chip = "Q"
+
+[assay_map."Single Cell 3' Gene Expression v4"]
+name = "Universal 3' Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X 3'"
+
+[assay_map."Single Cell 3' Gene Expression OCM v4"]
+name = "Universal 3' Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X OCM 3'"
+
+[assay_map."Single Cell 5' Gene Expression + V(D)J v3"]
+name = "Universal 5' Gene Expression"
+library_types = ["gene_expression", "vdj"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[assay_map."Single Cell 5' Gene Expression +  V(D)J OCM v3"]
+name = "Universal 5' Gene Expression"
+library_types = ["gene_expression", "vdj"]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X OCM 5'"
+
+[assay_map."Single Cell 5' Gene Expression + CRISPR Screening v3"]
+name = "Universal 5' Gene Expression"
+library_types = ["crispr_guide_capture", "gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[assay_map."Single Cell 3' Gene Expression + Cell Surface Protein v4"]
+name = "Universal 3' Gene Expression"
+library_types = ["antibody_capture", "gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X 3'"
+
+[assay_map."Single Cell 3' + Cell Surface Protein OCM v4"]
+name = "Universal 3' Gene Expression"
+library_types = ["antibody_capture", "gene_expression"]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v4 - GEM-X"
+chromium_chip = "GEM-X OCM 3'"
+
+[assay_map."Single Cell 5' Gene Expression v3"]
+name = "Universal 5' Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X 5'"
+
+[assay_map."Single Cell Multiome ATAC + Gene Expression v1 (GEM-X)"]
+name = "Epi Multiome ATAC + Gene Expression"
+library_types = ["chromatin_accessibility", "gene_expression"]
+sample_multiplexing = "singleplex"
+chemistry_version = "v1"
+chromium_chip = "GEM-X MO"
+
+[assay_map."Single Cell 5' Gene Expression OCM v3"]
+name = "Universal 5' Gene Expression"
+library_types = ["gene_expression"]
+sample_multiplexing = "on_chip_multiplexing"
+chemistry_version = "v3 - GEM-X"
+chromium_chip = "GEM-X OCM 5'"
