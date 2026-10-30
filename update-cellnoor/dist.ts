@@ -25,5 +25,7 @@ execSync("bun install");
 
 for (const [binName, binScript] of Object.entries(bin)) {
   const binPath = `${binName}${binExt}`;
-  execSync(`bun build --compile --minify --sourcemap --bytecode --format esm --target ${bunTarget} --outfile ${binPath} ${binScript}`);
+  execSync(
+    `bun build --compile --minify --sourcemap --bytecode --format esm --target ${bunTarget} --outfile ${binPath} ${binScript}`,
+  );
 }
