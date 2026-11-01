@@ -66,7 +66,7 @@ async function buildDataset(
 ): Promise<NewChromiumDataset> {
   return {
     name: basename(datasetDir),
-    delivered_at: (await stat(datasetDir)).mtime.toISOString(),
+    delivered_at: (await stat(datasetDir)).birthtime.toISOString(),
     library_ids: libraryReadableIds(datasetDir).map((id) =>
       lookup(libraryIds, id, "library"),
     ),
