@@ -1,4 +1,3 @@
-import { stat } from "fs/promises";
 import { basename } from "path";
 import {
   fetchOrThrow,
@@ -60,13 +59,30 @@ async function listFiles(datasetDir: string): Promise<DatasetFile[]> {
   return selectFiles(datasetDir, relativePaths.toSorted());
 }
 
+async function getDatasetDeliveryTime(
+  api: Api,
+  datasetDir: string,
+): Promise<Date> {
+  // Just hardcode UTC-5 (Eastern Standard Time)
+  const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
+    .json()
+    .then((md) => `${md.metadata_generated_date}-05:00`);
+
+  return new Date(deliveredAt);
+}
+
 async function buildDataset(
+  api: Api,
   datasetDir: string,
   libraryIds: Map<string, string>,
 ): Promise<NewChromiumDataset> {
+  const delivered_at = await getDatasetDeliveryTime(api, datasetDir).then((d) =>
+    d.toISOString(),
+  );
+
   return {
     name: basename(datasetDir),
-    delivered_at: (await stat(datasetDir)).birthtime.toISOString(),
+    delivered_at,
     library_ids: libraryReadableIds(datasetDir).map((id) =>
       lookup(libraryIds, id, "library"),
     ),
@@ -94,7 +110,7 @@ export async function syncChromiumDatasets(
 
   for (const datasetDir of datasetDirs) {
     try {
-      const dataset = await buildDataset(datasetDir, libraryIds);
+      const dataset = await buildDataset(api, datasetDir, libraryIds);
       const files = await listFiles(datasetDir);
       const current = existingByLibraries.get(
         librariesKey(libraryReadableIds(datasetDir)),
