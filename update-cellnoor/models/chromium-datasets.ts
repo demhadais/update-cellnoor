@@ -8,6 +8,7 @@ import {
   type Api,
   type Schemas,
 } from "../api.ts";
+import { matches } from "../compare.ts";
 import { lookup } from "../rows.ts";
 
 const LIBRARY_READABLE_ID = /25E\d+-L\d+|26CH\d+-L\d+/g;
@@ -120,6 +121,8 @@ export async function syncChromiumDatasets(
         await createDataset(api, dataset, files);
       } else if (!(await filesMatch(api, current, files))) {
         await replaceFiles(api, current, dataset, files);
+      } else {
+        await updateDataset(api, dataset, current);
       }
     } catch (error) {
       await reportLocalError(api, basename(datasetDir), datasetDir, error);
@@ -141,6 +144,26 @@ async function createDataset(
 
   if (created) {
     await uploadFiles(api, created.id, dataset.name, files);
+  }
+}
+
+async function updateDataset(
+  api: Api,
+  dataset: NewChromiumDataset,
+  current: Schemas["ChromiumDatasetDetailed"],
+): Promise<void> {
+  const { library_ids: _, ...record } = dataset;
+
+  if (!matches(record, current)) {
+    await send(
+      api,
+      dataset.name,
+      record,
+      api.client.PUT("/chromium-datasets/{id}", {
+        params: { path: { id: current.id } },
+        body: record,
+      }),
+    );
   }
 }
 
