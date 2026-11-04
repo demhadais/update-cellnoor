@@ -17,7 +17,6 @@ const PersonRow = z.object({
   email: email,
   orcid: optionalText,
   is_staff: flag,
-  microsoft_entra_oid: optionalText,
 });
 
 type PersonRow = z.infer<typeof PersonRow>;
@@ -32,6 +31,7 @@ type DesiredPerson = {
 export function buildPerson(
   row: PersonRow,
   institutionIds: Map<string, string>,
+  oids: Map<string, string>,
 ): DesiredPerson {
   const fields = {
     name: row.name,
@@ -46,15 +46,10 @@ export function buildPerson(
 
   return {
     email: row.email,
-    microsoftEntraOid: row.microsoft_entra_oid,
+    microsoftEntraOid: oids.get(row.email) ?? null,
     person: {
       ...fields,
-      account: row.microsoft_entra_oid
-        ? {
-            auth_provider: "microsoft",
-            microsoft_entra_oid: row.microsoft_entra_oid,
-          }
-        : { email: row.email },
+      account: { email: row.email },
       permissions_to_grant: [],
     },
     update: { ...fields, email: row.email },
@@ -66,6 +61,7 @@ export async function syncPeople(
   api: Api,
   rawRows: RawRow[],
   institutionIds: Map<string, string>,
+  oids: Map<string, string>,
 ): Promise<Map<string, string>> {
   const rows = await parseRows(api, PersonRow, rawRows, (row) =>
     String(row.email),
@@ -74,7 +70,7 @@ export async function syncPeople(
     api,
     rows,
     (row) => row.email,
-    (row) => buildPerson(row, institutionIds),
+    (row) => buildPerson(row, institutionIds, oids),
   );
 
   const existing = await fetchOrThrow(api.client.GET("/people"));
@@ -84,10 +80,14 @@ export async function syncPeople(
   const existingByEmail = new Map(
     existing.flatMap((p) => (p.email ? [[p.email.toLowerCase(), p]] : [])),
   );
+  const microsoftAccounts = accounts.filter(
+    (a) => a.auth_provider === "microsoft",
+  );
   const personIdByOid = new Map(
-    accounts
-      .filter((a) => a.auth_provider === "microsoft")
-      .map((a) => [a.auth_provider_user_id.toLowerCase(), a.id]),
+    microsoftAccounts.map((a) => [a.auth_provider_user_id.toLowerCase(), a.id]),
+  );
+  const personIdsWithMicrosoftAccount = new Set(
+    microsoftAccounts.map((a) => a.id),
   );
 
   const ids = new Map<string, string>();
@@ -99,39 +99,62 @@ export async function syncPeople(
       (oidPersonId && existingById.get(oidPersonId)) ||
       existingByEmail.get(email);
 
-    if (!current) {
-      const created = await send(
-        api,
-        email,
-        person,
-        api.client.POST("/people", { body: person }),
-      );
-      if (created) {
-        ids.set(email, created.id);
-      }
+    const id = current
+      ? await updatePerson(api, email, update, microsoftEntraOid, current)
+      : (
+          await send(
+            api,
+            email,
+            person,
+            api.client.POST("/people", { body: person }),
+          )
+        )?.id;
+
+    if (!id) {
       continue;
     }
+    ids.set(email, id);
 
-    ids.set(email, current.id);
-
-    // The web app sets the email of people with a Microsoft account when they
-    // sign in
-    const body = microsoftEntraOid
-      ? { ...update, email: current.email }
-      : update;
-
-    if (!matches(body, current)) {
+    if (microsoftEntraOid && !personIdsWithMicrosoftAccount.has(id)) {
+      const account: Schemas["NewAccount"] = {
+        auth_provider: "microsoft",
+        microsoft_entra_oid: microsoftEntraOid,
+        person_id: id,
+      };
       await send(
         api,
         email,
-        body,
-        api.client.PUT("/people/{id}", {
-          params: { path: { id: current.id } },
-          body,
-        }),
+        account,
+        api.client.POST("/accounts", { body: account }),
       );
     }
   }
 
   return ids;
+}
+
+async function updatePerson(
+  api: Api,
+  email: string,
+  update: Schemas["PersonUpdate"],
+  microsoftEntraOid: string | null,
+  current: Schemas["Person"],
+): Promise<string> {
+  // The web app sets the email of people with a Microsoft account when they
+  // sign in
+  const body = microsoftEntraOid ? { ...update, email: current.email } : update;
+
+  if (!matches(body, current)) {
+    await send(
+      api,
+      email,
+      body,
+      api.client.PUT("/people/{id}", {
+        params: { path: { id: current.id } },
+        body,
+      }),
+    );
+  }
+
+  return current.id;
 }

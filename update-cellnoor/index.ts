@@ -1,11 +1,12 @@
 import {
   createMicrosoftGraphClient,
   downloadWorkbook,
+  listMemberOids,
 } from "./microsoft-graph-client.ts";
 import { readConfig, type Config, type WorkbookKey } from "./config.ts";
 import { mkdirSync } from "fs";
 import { exportWorkbook } from "./export-workbook.ts";
-import { createApi } from "./api.ts";
+import { createApi, reportLocalError, type Api } from "./api.ts";
 import { uploadSeedData, type SeedData } from "./seed.ts";
 import seedData from "../seed-data.json";
 import { syncInstitutions } from "./models/institutions.ts";
@@ -81,6 +82,7 @@ async function main() {
     api,
     peopleAndInstitutions.people,
     institutionIds,
+    await lookupOids(config, api),
   );
   const projectIds = await syncProjects(
     api,
@@ -130,6 +132,25 @@ async function main() {
   });
 
   await syncChromiumDatasets(api, datasetDirs, libraryIds);
+}
+
+// A person without an OID is synced without a Microsoft account, and a later
+// run with a working lookup adds it
+async function lookupOids(
+  config: Config,
+  api: Api,
+): Promise<Map<string, string>> {
+  try {
+    const client = createMicrosoftGraphClient({
+      tenantId: config.microsoft_tenant_id,
+      clientId: config.microsoft_client_id,
+      clientSecret: config.microsoft_client_secret,
+    });
+    return await listMemberOids(client);
+  } catch (error) {
+    await reportLocalError(api, "microsoft-graph-users", null, error);
+    return new Map();
+  }
 }
 
 async function readWorkbooks(
