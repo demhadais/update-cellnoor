@@ -27,7 +27,6 @@ name = "Full Name"
 email = "Email"
 orcid = "ORCID"
 is_staff = "Is Staff"
-microsoft_entra_oid = "microsoft_entra_oid"
 
 [workbooks.people_and_institutions.sheets.labs]
 name = "Labs"

@@ -24,6 +24,45 @@ export function createMicrosoftGraphClient({
   return Client.initWithMiddleware({ authProvider });
 }
 
+type GraphUser = {
+  id: string;
+  mail: string | null;
+  userPrincipalName: string;
+  userType: string | null;
+};
+
+// Returns a map from lowercase email to OID. Guests are excluded because a
+// guest's OID in this tenant differs from the OID in their home tenant
+export async function listMemberOids(
+  client: Client,
+): Promise<Map<string, string>> {
+  const oids = new Map<string, string>();
+
+  let page = await client
+    .api("/users")
+    .select("id,mail,userPrincipalName,userType")
+    .top(999)
+    .get();
+
+  while (true) {
+    for (const user of page.value as GraphUser[]) {
+      if (user.userType !== "Member") {
+        continue;
+      }
+      if (user.mail) {
+        oids.set(user.mail.toLowerCase(), user.id);
+      }
+      oids.set(user.userPrincipalName.toLowerCase(), user.id);
+    }
+
+    const nextLink = page["@odata.nextLink"];
+    if (!nextLink) {
+      return oids;
+    }
+    page = await client.api(nextLink).get();
+  }
+}
+
 export async function downloadWorkbook(
   client: Client,
   { siteId, filePath }: { siteId: string; filePath: string },

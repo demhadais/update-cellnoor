@@ -1,7 +1,7 @@
 {
   "name": "update-cellnoor",
   "module": "index.ts",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": "github:demhadais/update-cellnoor",
   "author": {
     "name": "Ahmed Said",
@@ -23,10 +23,10 @@
     "bun": "1"
   },
   "peerDependencies": {
-    "typescript": "^7"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@azure/identity": "^4.14.0",
+    "@azure/identity": "^4.14.1",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "cellnoor": "https://github.com/thejacksonlaboratory/cellnoor",
     "openapi-fetch": "^0.17.0",
