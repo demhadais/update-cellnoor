@@ -88,7 +88,8 @@ export async function syncPeople(
 
   for (const { email, microsoftEntraOid, person } of desired) {
     const existingId =
-      (microsoftEntraOid && personIdByOid.get(microsoftEntraOid.toLowerCase())) ||
+      (microsoftEntraOid &&
+        personIdByOid.get(microsoftEntraOid.toLowerCase())) ||
       personIdByEmail.get(email);
 
     if (existingId) {
