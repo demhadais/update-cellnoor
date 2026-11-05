@@ -25,7 +25,6 @@ type DesiredPerson = {
   email: string;
   microsoftEntraOid: string | null;
   person: Schemas["NewPerson"];
-  update: Schemas["PersonUpdate"];
 };
 
 export function buildPerson(
@@ -33,26 +32,26 @@ export function buildPerson(
   institutionIds: Map<string, string>,
   oids: Map<string, string>,
 ): DesiredPerson {
-  const fields = {
-    name: row.name,
-    institution_id: lookup(
-      institutionIds,
-      row.email.slice(row.email.indexOf("@") + 1),
-      "institution email domain",
-    ),
-    is_staff: row.is_staff,
-    orcid: row.orcid,
-  };
+  const microsoftEntraOid = oids.get(row.email) ?? null;
 
   return {
     email: row.email,
-    microsoftEntraOid: oids.get(row.email) ?? null,
+    microsoftEntraOid,
     person: {
-      ...fields,
-      account: { email: row.email },
+      name: row.name,
+      institution_id: lookup(
+        institutionIds,
+        row.email.slice(row.email.indexOf("@") + 1),
+        "institution email domain",
+      ),
+      is_staff: row.is_staff,
+      orcid: row.orcid,
+      email: row.email,
+      auth_account: microsoftEntraOid
+        ? { auth_provider: "microsoft", microsoft_entra_oid: microsoftEntraOid }
+        : null,
       permissions_to_grant: [],
     },
-    update: { ...fields, email: row.email },
   };
 }
 
@@ -76,85 +75,37 @@ export async function syncPeople(
   const existing = await fetchOrThrow(api.client.GET("/people"));
   const accounts = await fetchOrThrow(api.client.GET("/accounts"));
 
-  const existingById = new Map(existing.map((p) => [p.id, p]));
-  const existingByEmail = new Map(
-    existing.flatMap((p) => (p.email ? [[p.email.toLowerCase(), p]] : [])),
-  );
-  const microsoftAccounts = accounts.filter(
-    (a) => a.auth_provider === "microsoft",
+  const personIdByEmail = new Map(
+    existing.flatMap((p) => (p.email ? [[p.email.toLowerCase(), p.id]] : [])),
   );
   const personIdByOid = new Map(
-    microsoftAccounts.map((a) => [a.auth_provider_user_id.toLowerCase(), a.id]),
-  );
-  const personIdsWithMicrosoftAccount = new Set(
-    microsoftAccounts.map((a) => a.id),
+    accounts
+      .filter((a) => a.auth_provider === "microsoft")
+      .map((a) => [a.auth_provider_user_id.toLowerCase(), a.person_id]),
   );
 
   const ids = new Map<string, string>();
 
-  for (const { email, microsoftEntraOid, person, update } of desired) {
-    const oidPersonId =
-      microsoftEntraOid && personIdByOid.get(microsoftEntraOid.toLowerCase());
-    const current =
-      (oidPersonId && existingById.get(oidPersonId)) ||
-      existingByEmail.get(email);
+  for (const { email, microsoftEntraOid, person } of desired) {
+    const existingId =
+      (microsoftEntraOid && personIdByOid.get(microsoftEntraOid.toLowerCase())) ||
+      personIdByEmail.get(email);
 
-    const id = current
-      ? await updatePerson(api, email, update, microsoftEntraOid, current)
-      : (
-          await send(
-            api,
-            email,
-            person,
-            api.client.POST("/people", { body: person }),
-          )
-        )?.id;
-
-    if (!id) {
+    if (existingId) {
+      ids.set(email, existingId);
       continue;
     }
-    ids.set(email, id);
 
-    if (microsoftEntraOid && !personIdsWithMicrosoftAccount.has(id)) {
-      const account: Schemas["NewAccount"] = {
-        auth_provider: "microsoft",
-        microsoft_entra_oid: microsoftEntraOid,
-        person_id: id,
-      };
-      await send(
-        api,
-        email,
-        account,
-        api.client.POST("/accounts", { body: account }),
-      );
+    const created = await send(
+      api,
+      email,
+      person,
+      api.client.POST("/people", { body: person }),
+    );
+    if (created) {
+      ids.set(email, created.id);
     }
   }
 
   return ids;
-}
-
-async function updatePerson(
-  api: Api,
-  email: string,
-  update: Schemas["PersonUpdate"],
-  microsoftEntraOid: string | null,
-  current: Schemas["Person"],
-): Promise<string> {
-  // The web app sets the email of people with a Microsoft account when they
-  // sign in
-  const body = microsoftEntraOid ? { ...update, email: current.email } : update;
-
-  if (!matches(body, current)) {
-    await send(
-      api,
-      email,
-      body,
-      api.client.PUT("/people/{id}", {
-        params: { path: { id: current.id } },
-        body,
-      }),
-    );
-  }
-
-  return current.id;
 }

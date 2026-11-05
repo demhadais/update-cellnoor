@@ -134,8 +134,7 @@ async function main() {
   await syncChromiumDatasets(api, datasetDirs, libraryIds);
 }
 
-// A person without an OID is synced without a Microsoft account, and a later
-// run with a working lookup adds it
+// A person without an OID is created without a Microsoft account
 async function lookupOids(
   config: Config,
   api: Api,

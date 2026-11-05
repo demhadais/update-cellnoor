@@ -195,9 +195,10 @@ export function buildSpecimen(
   return {
     readable_id: row.readable_id,
     name: row.name,
+    origin: "primary",
     submitted_by: lookup(ids.people, row.submitted_by, "person"),
     project_id: lookup(ids.projects, row.project_id, "project"),
-    received_at: row.received_at,
+    received_or_created_at: row.received_at,
     returned_at: row.returned_at,
     returned_by:
       row.returned_by && lookup(ids.people, row.returned_by, "person"),
@@ -246,7 +247,7 @@ export async function syncSpecimens(
   const references = new Map(
     existing.map((s) => [
       s.readable_id,
-      { id: s.id, received_at: s.received_at },
+      { id: s.id, received_at: s.received_or_created_at },
     ]),
   );
 
@@ -263,7 +264,7 @@ export async function syncSpecimens(
       if (created) {
         references.set(created.readable_id, {
           id: created.id,
-          received_at: created.received_at,
+          received_at: created.received_or_created_at,
         });
       }
       continue;
@@ -285,12 +286,13 @@ async function updateSpecimen(
 
   // `SpecimenDetailed` calls the type `type_` and doesn't return the
   // preservation state (it's implied by the fixative and thermal preservation
-  // method)
+  // method) or the origin (it's implied by `parent_specimen_id`)
   const comparable = {
     ...record,
     type: undefined,
     type_: record.type,
     preservation_state: undefined,
+    origin: undefined,
   };
 
   if (!matches(comparable, current)) {
