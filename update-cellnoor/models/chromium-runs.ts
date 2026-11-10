@@ -81,7 +81,7 @@ export function ocmBarcodeIds(
     .flatMap((tags) => tags.split("+"))
     .map((tag) => tag.trim())
     .filter((tag) => /^OB\d$/i.test(tag))
-    .map((tag) => tag.toLowerCase() as Schemas["OcmBarcodeId"]);
+    .map((tag) => tag.toUpperCase() as Schemas["OcmBarcodeId"]);
 }
 
 function loadedEntity(row: GemsSuspensionRow, ids: Ids): LoadedEntity {

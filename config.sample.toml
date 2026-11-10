@@ -4,7 +4,6 @@ microsoft_client_id = ""
 microsoft_client_secret = ""
 microsoft_sharepoint_site_id = ""
 api_base_url = "https://api.cellnoor.jax.org"
-files_base_url = "https://cellnoor.jax.org"
 api_key = ""
 
 # People, institutions, and labs

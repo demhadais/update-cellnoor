@@ -3,7 +3,6 @@ import {
   fetchOrThrow,
   reportLocalError,
   send,
-  sendSucceeded,
   writeError,
   type Api,
   type Schemas,
@@ -26,10 +25,13 @@ const UPLOADABLE_FILENAMES = new Set([
 const ATAC_SUMMARY = "cellranger-atac/summary.json";
 
 type NewChromiumDataset = Schemas["NewChromiumDataset"];
+type ChromiumDataset = Schemas["ChromiumDatasetDetailed"];
+type FileTreeNode = Schemas["ChromiumDatasetParsedFileDataFileTree"];
 
 // `name` is the path relative to the pipeline directory, which is how the API
 // expects files to be named
 export type DatasetFile = { path: string; name: string };
+export type HashedFile = { file: DatasetFile; hash: string };
 
 export function libraryReadableIds(datasetDir: string): string[] {
   const [libraries = ""] = basename(datasetDir).split("_");
@@ -60,10 +62,7 @@ async function listFiles(datasetDir: string): Promise<DatasetFile[]> {
   return selectFiles(datasetDir, relativePaths.toSorted());
 }
 
-async function getDatasetDeliveryTime(
-  api: Api,
-  datasetDir: string,
-): Promise<Date> {
+async function getDatasetDeliveryTime(datasetDir: string): Promise<Date> {
   // Just hardcode UTC-5 (Eastern Standard Time)
   const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
     .json()
@@ -73,11 +72,10 @@ async function getDatasetDeliveryTime(
 }
 
 async function buildDataset(
-  api: Api,
   datasetDir: string,
   libraryIds: Map<string, string>,
 ): Promise<NewChromiumDataset> {
-  const delivered_at = await getDatasetDeliveryTime(api, datasetDir).then((d) =>
+  const delivered_at = await getDatasetDeliveryTime(datasetDir).then((d) =>
     d.toISOString(),
   );
 
@@ -111,18 +109,27 @@ export async function syncChromiumDatasets(
 
   for (const datasetDir of datasetDirs) {
     try {
-      const dataset = await buildDataset(api, datasetDir, libraryIds);
+      const dataset = await buildDataset(datasetDir, libraryIds);
       const files = await listFiles(datasetDir);
       const current = existingByLibraries.get(
         librariesKey(libraryReadableIds(datasetDir)),
       );
 
-      if (!current) {
-        await createDataset(api, dataset, files);
-      } else if (!(await filesMatch(api, current, files))) {
-        await replaceFiles(api, current, dataset, files);
-      } else {
+      if (current) {
         await updateDataset(api, dataset, current);
+      }
+
+      const target =
+        current ??
+        (await send(
+          api,
+          dataset.name,
+          dataset,
+          api.client.POST("/chromium-datasets", { body: dataset }),
+        ));
+
+      if (target) {
+        await syncFiles(api, target, dataset.name, files);
       }
     } catch (error) {
       await reportLocalError(api, basename(datasetDir), datasetDir, error);
@@ -130,27 +137,10 @@ export async function syncChromiumDatasets(
   }
 }
 
-async function createDataset(
-  api: Api,
-  dataset: NewChromiumDataset,
-  files: DatasetFile[],
-): Promise<void> {
-  const created = await send(
-    api,
-    dataset.name,
-    dataset,
-    api.client.POST("/chromium-datasets", { body: dataset }),
-  );
-
-  if (created) {
-    await uploadFiles(api, created.id, dataset.name, files);
-  }
-}
-
 async function updateDataset(
   api: Api,
   dataset: NewChromiumDataset,
-  current: Schemas["ChromiumDatasetDetailed"],
+  current: ChromiumDataset,
 ): Promise<void> {
   const { library_ids: _, ...record } = dataset;
 
@@ -167,64 +157,49 @@ async function updateDataset(
   }
 }
 
-async function filesMatch(
-  api: Api,
-  dataset: Schemas["ChromiumDatasetDetailed"],
-  files: DatasetFile[],
-): Promise<boolean> {
-  const prefix = `${dataset.links.file_dir}/`;
-  const links = new Map(
-    dataset.links.raw_files.map((link) => [link.slice(prefix.length), link]),
+function remoteHashes(nodes: FileTreeNode[]): [string, string][] {
+  return nodes.flatMap((node): [string, string][] =>
+    node.type === "file"
+      ? [[node.path, Buffer.from(node.sha256_hash).toString("hex")]]
+      : remoteHashes(node.children),
   );
-
-  if (links.size !== files.length) {
-    return false;
-  }
-
-  for (const file of files) {
-    const link = links.get(file.name);
-    if (!link) {
-      return false;
-    }
-
-    const response = await fetch(`${api.filesBaseUrl}${link}`, {
-      headers: api.headers,
-    });
-    if (!response.ok) {
-      throw new Error(`downloading ${link} returned ${response.status}`);
-    }
-
-    const remote = Buffer.from(await response.bytes());
-    if (!remote.equals(await Bun.file(file.path).bytes())) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
-// The API doesn't allow overwriting a dataset's files, so the dataset is
-// deleted and recreated
-async function replaceFiles(
+export function changedFiles(
+  remote: Map<string, string>,
+  local: HashedFile[],
+): DatasetFile[] {
+  return local
+    .filter(({ file, hash }) => remote.get(file.name) !== hash)
+    .map(({ file }) => file);
+}
+
+async function hashFile(file: DatasetFile): Promise<HashedFile> {
+  const bytes = await Bun.file(file.path).bytes();
+  return {
+    file,
+    hash: new Bun.CryptoHasher("sha256").update(bytes).digest("hex"),
+  };
+}
+
+async function syncFiles(
   api: Api,
-  current: Schemas["ChromiumDatasetDetailed"],
-  dataset: NewChromiumDataset,
+  dataset: ChromiumDataset,
+  identifier: string,
   files: DatasetFile[],
 ): Promise<void> {
-  const deleted = await sendSucceeded(
-    api,
-    dataset.name,
-    { delete: current.id },
-    api.client.DELETE("/chromium-datasets/{id}", {
-      params: { path: { id: current.id } },
-    }),
+  const changed = changedFiles(
+    new Map(remoteHashes(dataset.files)),
+    await Promise.all(files.map(hashFile)),
   );
 
-  if (deleted) {
-    await createDataset(api, dataset, files);
+  if (changed.length > 0) {
+    await uploadFiles(api, dataset.id, identifier, changed);
   }
 }
 
+// The `/files` route isn't in the API's OpenAPI spec, so it can't be called
+// through `api.client`
 async function uploadFiles(
   api: Api,
   datasetId: string,

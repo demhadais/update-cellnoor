@@ -61,7 +61,6 @@ export const ConfigValidator = z.object({
   microsoft_client_secret: z.string(),
   microsoft_sharepoint_site_id: z.string(),
   api_base_url: z.string(),
-  files_base_url: z.string(),
   api_key: z.string(),
   workbooks: z.object({
     people_and_institutions: PeopleAndInstitutionsWorkbook,

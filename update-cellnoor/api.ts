@@ -10,19 +10,16 @@ export type Schemas = components["schemas"];
 export type Api = {
   client: CellnoorClient;
   baseUrl: string;
-  filesBaseUrl: string;
   headers: Record<string, string>;
   errorsDir: string;
 };
 
 export function createApi({
   baseUrl,
-  filesBaseUrl,
   apiKey,
   outputDir,
 }: {
   baseUrl: string;
-  filesBaseUrl: string;
   apiKey: string;
   outputDir: string;
 }): Api {
@@ -35,7 +32,6 @@ export function createApi({
   return {
     client: createCellnoorClient({ baseUrl, headers }),
     baseUrl,
-    filesBaseUrl,
     headers,
     errorsDir,
   };
@@ -63,24 +59,6 @@ export async function send<T>(
     request,
     response: { status: response.status, body: error },
   });
-}
-
-export async function sendSucceeded(
-  api: Api,
-  identifier: string,
-  request: unknown,
-  call: Promise<FetchResult<unknown>>,
-): Promise<boolean> {
-  const { error, response } = await call;
-
-  if (!response.ok) {
-    await writeError(api, identifier, {
-      request,
-      response: { status: response.status, body: error },
-    });
-  }
-
-  return response.ok;
 }
 
 export async function reportLocalError(

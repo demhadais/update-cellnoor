@@ -66,9 +66,9 @@ describe("buildGemWell", () => {
       plexy: "on_chip_multiplexing",
       readable_id: "G0079",
       loading: [
-        { ocm_barcode_id: "ob3", suspension_id: "s6" },
-        { ocm_barcode_id: "ob4", suspension_id: "s6" },
-        { ocm_barcode_id: "ob1", suspension_id: "s1" },
+        { ocm_barcode_id: "OB3", suspension_id: "s6" },
+        { ocm_barcode_id: "OB4", suspension_id: "s6" },
+        { ocm_barcode_id: "OB1", suspension_id: "s1" },
       ],
     });
   });
@@ -83,7 +83,7 @@ describe("buildGemWell", () => {
     ).toEqual({
       plexy: "on_chip_multiplexing",
       readable_id: "G0304",
-      loading: [{ ocm_barcode_id: "ob1", suspension_pool_id: "m75" }],
+      loading: [{ ocm_barcode_id: "OB1", suspension_pool_id: "m75" }],
     });
   });
 
@@ -147,11 +147,11 @@ describe("buildChromiumRun", () => {
       gem_wells: [
         {
           readable_id: "G0078",
-          loading: [{ ocm_barcode_id: "ob1", suspension_id: "s1" }],
+          loading: [{ ocm_barcode_id: "OB1", suspension_id: "s1" }],
         },
         {
           readable_id: "G0079",
-          loading: [{ ocm_barcode_id: "ob2", suspension_id: "s2" }],
+          loading: [{ ocm_barcode_id: "OB2", suspension_id: "s2" }],
         },
       ],
     });

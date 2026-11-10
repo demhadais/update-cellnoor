@@ -67,7 +67,6 @@ async function main() {
 
   const api = createApi({
     baseUrl: config.api_base_url,
-    filesBaseUrl: config.files_base_url,
     apiKey: config.api_key,
     outputDir,
   });
