@@ -12,7 +12,10 @@ import seedData from "../seed-data.json";
 import { syncInstitutions } from "./models/institutions.ts";
 import { syncPeople } from "./models/people.ts";
 import { syncProjects } from "./models/projects.ts";
-import { syncSpecimens } from "./models/specimens.ts";
+import {
+  deleteSpecimensWithoutSuspensions,
+  syncSpecimens,
+} from "./models/specimens.ts";
 import { syncSuspensions } from "./models/suspensions.ts";
 import { syncSuspensionPools } from "./models/suspension-pools.ts";
 import { syncChromiumRuns } from "./models/chromium-runs.ts";
@@ -102,6 +105,7 @@ async function main() {
     people: personIds,
     specimens,
   });
+  await deleteSpecimensWithoutSuspensions(api);
   const poolIds = await syncSuspensionPools(
     api,
     {
