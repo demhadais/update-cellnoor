@@ -276,6 +276,29 @@ export async function syncSpecimens(
   return references;
 }
 
+export async function deleteSpecimensWithoutSuspensions(
+  api: Api,
+): Promise<void> {
+  const [specimens, suspensions] = await Promise.all([
+    fetchOrThrow(api.client.GET("/specimens")),
+    fetchOrThrow(api.client.GET("/suspensions")),
+  ]);
+  const specimenIdsWithSuspensions = new Set(
+    suspensions.map((s) => s.specimen_id),
+  );
+
+  for (const { id, readable_id } of specimens) {
+    if (!specimenIdsWithSuspensions.has(id)) {
+      await send(
+        api,
+        readable_id,
+        { delete: id },
+        api.client.DELETE("/specimens/{id}", { params: { path: { id } } }),
+      );
+    }
+  }
+}
+
 async function updateSpecimen(
   api: Api,
   specimen: NewSpecimen,
