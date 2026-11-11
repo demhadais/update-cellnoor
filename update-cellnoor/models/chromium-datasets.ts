@@ -8,7 +8,7 @@ import {
   type Schemas,
 } from "../api.ts";
 import { matches } from "../compare.ts";
-import { lookup } from "../rows.ts";
+import { EASTERN_STANDARD_TIME, lookup } from "../rows.ts";
 
 const LIBRARY_READABLE_ID = /25E\d+-L\d+|26CH\d+-L\d+/g;
 
@@ -66,7 +66,7 @@ async function getDatasetDeliveryTime(datasetDir: string): Promise<Date> {
   // Just hardcode UTC-5 (Eastern Standard Time)
   const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
     .json()
-    .then((md) => `${md.metadata_generated_date}-05:00`);
+    .then((md) => `${md.metadata_generated_date}${EASTERN_STANDARD_TIME}`);
 
   return new Date(deliveredAt);
 }

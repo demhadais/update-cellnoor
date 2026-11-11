@@ -5,7 +5,7 @@ import type { AssaySpecification } from "../config.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEach,
-  date,
+  startOfWorkday,
   email,
   flag,
   lookup,
@@ -18,7 +18,7 @@ const GemsRow = z.object({
   readable_id: text,
   gem_well_readable_id: text,
   assay_id: text,
-  run_at: date,
+  run_at: startOfWorkday,
   run_by: email,
 });
 

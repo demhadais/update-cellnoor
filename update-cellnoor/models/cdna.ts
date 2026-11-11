@@ -4,7 +4,7 @@ import { matches } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
+  startOfWorkday,
   emails,
   lookup,
   notes,
@@ -22,7 +22,7 @@ const CdnaRow = z.object({
   gem_well_id: text,
   library_type: text,
   n_amplification_cycles: optionalNumber,
-  prepared_at: date,
+  prepared_at: startOfWorkday,
   preparers: emails,
   notes: optionalText,
   concentration: optionalNumber,

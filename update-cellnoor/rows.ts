@@ -32,13 +32,20 @@ function blankTo<T>(replacement: T, transform: (value: unknown) => unknown) {
 const trim = (value: unknown) => String(value).trim();
 const lowercase = (value: unknown) => String(value).trim().toLowerCase();
 
-function toUtcDay(value: unknown): unknown {
-  if (!(value instanceof Date)) {
-    return value;
-  }
-  return new Date(
-    Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()),
-  ).toISOString();
+export const EASTERN_STANDARD_TIME = "-05:00";
+
+function toEasternStandardTime(time: string) {
+  return (value: unknown): unknown => {
+    if (!(value instanceof Date)) {
+      return value;
+    }
+    const day = new Date(
+      Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()),
+    )
+      .toISOString()
+      .slice(0, 10);
+    return new Date(`${day}T${time}${EASTERN_STANDARD_TIME}`).toISOString();
+  };
 }
 
 export const text = z.preprocess(blankTo(undefined, trim), z.string());
@@ -54,9 +61,20 @@ export const optionalEmail = z.preprocess(
 export const emails = z
   .array(email)
   .transform((addresses) => [...new Set(addresses)]);
-export const date = z.preprocess(blankTo(undefined, toUtcDay), z.string());
-export const optionalDate = z.preprocess(
-  blankTo(null, toUtcDay),
+export const startOfWorkday = z.preprocess(
+  blankTo(undefined, toEasternStandardTime("09:00")),
+  z.string(),
+);
+export const optionalStartOfWorkday = z.preprocess(
+  blankTo(null, toEasternStandardTime("09:00")),
+  z.string().nullable(),
+);
+export const endOfWorkday = z.preprocess(
+  blankTo(undefined, toEasternStandardTime("16:00")),
+  z.string(),
+);
+export const optionalEndOfWorkday = z.preprocess(
+  blankTo(null, toEasternStandardTime("16:00")),
   z.string().nullable(),
 );
 export const optionalNumber = z.preprocess(

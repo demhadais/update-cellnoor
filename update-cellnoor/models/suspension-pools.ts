@@ -4,7 +4,7 @@ import { matches, unique } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
+  startOfWorkday,
   emails,
   lookup,
   notes,
@@ -22,7 +22,7 @@ const SuspensionPoolRow = z.object({
   readable_id: text,
   name: text,
   multiplexing_tag_type: optionalText,
-  pooled_at: date,
+  pooled_at: startOfWorkday,
   preparers: emails,
   notes: optionalText,
   pre_storage_concentration: optionalNumber,

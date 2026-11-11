@@ -21,8 +21,7 @@ export function buildProject(
   return {
     name: row.name,
     members: row.members.map((e) => lookup(personIds, e, "person")),
-    started_at: STARTED_AT,
-    ended_at: null,
+    active_period: { started_at: STARTED_AT, ended_at: null },
   };
 }
 

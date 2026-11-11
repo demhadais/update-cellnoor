@@ -4,7 +4,7 @@ import { matches } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
+  startOfWorkday,
   emails,
   lookup,
   notes,
@@ -23,7 +23,7 @@ const LibraryRow = z.object({
   index_set_name: optionalText,
   number_of_sample_index_pcr_cycles: optionalNumber,
   target_reads_per_cell: optionalNumber,
-  prepared_at: date,
+  prepared_at: startOfWorkday,
   preparers: emails,
   notes: optionalText,
   concentration: optionalNumber,
