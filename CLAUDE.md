@@ -46,7 +46,7 @@ Release: pushing a SemVer tag triggers cargo-dist (`dist-workspace.toml`, `.gith
 Every `models/*.ts` follows the same shape:
 
 - A zod `XRow` schema built from the cell preprocessors in `rows.ts` (`text`, `optionalText`, `email`, `date`, `optionalNumber`, `flag`, ...). Workbook formulas emit `0` or `""` for missing values, so `isBlank` treats `0` as blank: an optional number of `0` becomes `null`. Date cells are parsed with `startOfWorkday`/`endOfWorkday` (and their `optional*` variants), which send 09:00/16:00 of the cell's calendar day at `EASTERN_STANDARD_TIME` (a fixed `-05:00`, shared with chromium datasets' `delivered_at`). Every date field uses a start-of-workday schema except specimens' `returned_at`.
-- `parseRows` → pure `buildX(row, ids)` returning an API body typed as `Schemas["NewX"]`. Workbook vocabulary is converted through `lookup` (ID maps) and `translate` (string tables), which throw `unknown <description> '<key>'`.
+- `parseRows` → pure `buildX(row, ids)` returning an API body typed as `Schemas["NewX"]`. Workbook vocabulary is converted through `lookup` (ID maps, throws `UnknownReference`) and `translate` (string tables keyed by the canonical column name, throws `UnknownValue`). A build function that needs a cell the schema allows to be blank throws `MissingValue(field)`.
 - `buildEach` / `buildEachWithMeasurements` catch per-item build errors. A record whose measurements fail to build is still synced, without measurements.
 - Fetch existing records (usually `/x/detailed`), POST missing ones, PUT when `!matches(body, current)`, then reconcile child collections with `syncMeasurements` / `syncIds` (`sync.ts`), which POST missing and DELETE extra.
 
@@ -56,9 +56,11 @@ Tests (`*.test.ts` next to the module) cover the pure `build*`/translation funct
 
 `matches(desired, actual)` only checks keys present in `desired`. `equivalent` treats `null` and `undefined` as equal, compares ISO timestamps by instant, and compares numbers after `Math.fround` because the API stores 32-bit floats. When a `*Detailed` response names or shapes a field differently from the `New*` body (e.g. specimens return `type_`, omit `preservation_state` and `origin`), the update function builds an adjusted `comparable` object before calling `matches`.
 
-### Error reporting (`api.ts`)
+### Error reporting (`api.ts`, `report.ts`)
 
-Per-record failures never abort the run. Validation errors, build errors, and non-2xx responses are written as `{request, response}` JSON to `<outputDir>/errors/<identifier>.json` (with `-2`, `-3`, ... suffixes on collisions). That directory is wiped at the start of each run. Use `send` for writes. Use `fetchOrThrow` only for the list GETs that every later step depends on; it aborts the run.
+Per-record failures never abort the run. Every error is reported against a `Subject` (`{ entity, id }`, where `id` is the key other records use to look this one up). Each is written as `{request, response}` JSON to `<outputDir>/errors/<entity>_<id>.json` (whitespace and `/` in the id become `_`; `-2`, `-3`, ... suffixes on collisions) and recorded as a typed `Problem` in `api.problems`. At the end of a run, `renderReport` groups the problems by type and entity into `<outputDir>/errors/report.txt`. The report's readers are non-technical workbook editors: `report.ts` maps each entity to its sheet and each field to its column header through the config, and only counts problems that can't be fixed in a workbook (entities without a sheet, and API rejections other than data constraints and duplicates). That directory is wiped at the start of each run. Use `send` for writes. Use `fetchOrThrow` only for the list GETs that every later step depends on; it aborts the run, and no report is written.
+
+A failed `lookup` throws `UnknownReference`. The report omits it when the referenced subject has its own problem, so a failed parent isn't repeated for every descendant. When children look a parent up by a different key than the parent's subject (GEMs of a chromium run, email domains of an institution), the parent's sync calls `reportParentFailed` for those keys.
 
 ### cellnoor API dependency
 

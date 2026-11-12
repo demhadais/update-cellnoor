@@ -94,7 +94,7 @@ export function buildCdna(
   const libraryType = translate(
     LIBRARY_TYPES,
     row.library_type,
-    "library type",
+    "library_type",
   );
   const preparers = row.preparers.map((e) => lookup(ids.people, e, "person"));
 
@@ -108,7 +108,7 @@ export function buildCdna(
 
   return {
     readable_id: row.readable_id,
-    gem_well_id: lookup(ids.gemWells, row.gem_well_id, "GEMs"),
+    gem_well_id: lookup(ids.gemWells, row.gem_well_id, "gems"),
     prepared_at: row.prepared_at,
     preparers,
     additional_data: notes(row.notes),
@@ -122,11 +122,12 @@ export async function syncCdna(
   rawRows: RawRow[],
   ids: { people: Map<string, string>; gemWells: Map<string, string> },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, CdnaRow, rawRows, (row) =>
+  const rows = await parseRows(api, "cdna", CdnaRow, rawRows, (row) =>
     String(row.readable_id),
   );
   const cdnas = await buildEachWithMeasurements(
     api,
+    { record: "cdna", measurements: "cdna" },
     rows,
     (row) => row.readable_id,
     (row) => buildCdna(row, ids),
@@ -146,7 +147,7 @@ export async function syncCdna(
     if (!current) {
       const created = await send(
         api,
-        cdna.readable_id,
+        { entity: "cdna", id: cdna.readable_id },
         cdna,
         api.client.POST("/cdna", { body: cdna }),
       );
@@ -177,7 +178,7 @@ async function updateCdna(
   if (!matches(record, current)) {
     await send(
       api,
-      cdna.readable_id,
+      { entity: "cdna", id: cdna.readable_id },
       record,
       api.client.PUT("/cdna/{id}", { params, body: record }),
     );
@@ -185,7 +186,7 @@ async function updateCdna(
 
   await syncMeasurements(
     api,
-    cdna.readable_id,
+    { entity: "cdna", id: cdna.readable_id },
     cdna.measurements,
     current.measurements,
     {
@@ -196,7 +197,7 @@ async function updateCdna(
     },
   );
 
-  await syncIds(api, cdna.readable_id, cdna.preparers, current.preparers, {
+  await syncIds(api, { entity: "cdna", id: cdna.readable_id }, cdna.preparers, current.preparers, {
     add: (body) => api.client.POST("/cdna/{id}/preparers", { params, body }),
     remove: (body) =>
       api.client.DELETE("/cdna/{id}/preparers", { params, body }),

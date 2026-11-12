@@ -1,0 +1,198 @@
+In the "Specimens" sheet of the "Sample Inventory" workbook, the following specimens have nothing in the "Date Received" column:
+- 26SP0480
+- 26SP0481
+- 26SP0482
+- 26SP0483
+- 26SP0484
+- 26SP0485
+- 26SP0630
+- 26SP0631
+- 26SP0632
+- 26SP0633
+- 26SP0634
+- 26SP0635
+Please fill in "Date Received" for these specimens.
+
+In the "Specimens" sheet of the "Sample Inventory" workbook, the following specimens have nothing in the "Sample Submitting Lab" column:
+- 26SP0527
+- 26SP0528
+- 26SP0529
+- 26SP0530
+- 26SP0531
+- 26SP0532
+- 26SP0533
+- 26SP0534
+- 26SP0535
+- 26SP0536
+- 26SP0537
+- 26SP0538
+- 26SP0539
+- 26SP0540
+- 26SP0541
+- 26SP0542
+- 26SP0629
+- 26SP0636
+Please fill in "Sample Submitting Lab" for these specimens.
+
+In the "Specimens" sheet of the "Sample Inventory" workbook, the following specimens have nothing in the "Species" column:
+- 26SP0527
+- 26SP0528
+- 26SP0529
+- 26SP0530
+- 26SP0531
+- 26SP0532
+- 26SP0533
+- 26SP0534
+- 26SP0535
+- 26SP0536
+- 26SP0537
+- 26SP0538
+- 26SP0539
+- 26SP0540
+- 26SP0541
+- 26SP0542
+- 26SP0543
+- 26SP0544
+- 26SP0545
+Please fill in "Species" for these specimens.
+
+In the "Specimens" sheet of the "Sample Inventory" workbook, the following specimens have nothing in the "Returned By" column:
+- 25SP808
+- 25SP809
+- 25SP810
+- 25SP811
+- 25SP972
+- 26SP0606
+- 26SP0607
+- 26SP0608
+- 26SP0609
+- 26SP0610
+- 26SP0611
+- 26SP0612
+- 26SP0613
+- 26SP0614
+- 26SP0615
+- 26SP0616
+- 26SP0617
+- 26SP0618
+Please fill in "Returned By" for these specimens.
+
+In the "QC Measurements" sheet of the "Sample Inventory" workbook, the following specimens have nothing in the "Measured By" column:
+- 25SP1561
+- 25SP1562
+- 25SP1563
+- 25SP1564
+- 25SP1565
+- 25SP1566
+- 25SP1567
+- 25SP1568
+- 25SP1569
+- 25SP1570
+- 25SP1571
+- 25SP1572
+- 25SP1573
+- 25SP1574
+- 25SP1575
+- 25SP1576
+- 25SP1577
+- 25SP1578
+- 25SP1579
+- 25SP1580
+- 25SP1581
+- 25SP1582
+- 25SP1583
+- 25SP1584
+- 25SP1585
+- 25SP1586
+- 25SP1587
+- 25SP1588
+- 25SP1589
+- 25SP1590
+- 25SP1591
+- 25SP1592
+- 25SP1593
+- 25SP1594
+- 25SP1595
+- 25SP1596
+- 25SP1597
+- 25SP1598
+- 25SP1599
+- 25SP1600
+- 25SP1601
+- 25SP1602
+- 25SP1603
+- 25SP1604
+- 25SP1605
+- 25SP1606
+- 25SP1607
+- 25SP1608
+- 25SP1609
+- 25SP1610
+- 25SP1611
+- 25SP1612
+- 25SP1613
+- 25SP1614
+- 25SP1615
+- 25SP1616
+- 25SP1617
+- 25SP1618
+- 25SP1619
+- 25SP1620
+- 25SP1621
+- 25SP1622
+- 25SP1623
+- 25SP1624
+- 25SP1625
+- 25SP1626
+- 25SP1627
+- 25SP1628
+- 25SP1629
+- 25SP1630
+- 25SP1631
+- 25SP1632
+- 25SP1633
+- 25SP1634
+- 25SP1635
+- 25SP1636
+- 25SP1637
+Please fill in "Measured By" for these specimens.
+
+In the "Suspensions" sheet of the "Chromium" workbook, the following suspensions have nothing in the "Cellular Material" column:
+- 26CH125-S22
+Please fill in "Cellular Material" for these suspensions.
+
+In the "Suspensions" sheet of the "Chromium" workbook, the following suspensions refer to people that could not be found:
+- 26CH023-S1: (blank)
+Please correct these, or add the missing people to the "People" sheet of the "People and Institutions" workbook.
+
+In the "Suspensions" sheet of the "Chromium" workbook, the following suspensions could not be saved:
+- 25E172-S1, prepared by Person: new row for relation "suspension" violates check constraint "created_after_specimen_received"
+Please check these suspensions using the messages above.
+
+In the "Multiplexed Suspensions" sheet of the "Chromium" workbook, the following multiplexed suspensions have nothing in the "Multiplexed Suspension (Pool) Name" column:
+- M40
+Please fill in "Multiplexed Suspension (Pool) Name" for these multiplexed suspensions.
+
+In the "Multiplexed Suspensions" sheet of the "Chromium" workbook, the following multiplexed suspensions have nothing in the "Date Child Suspensions Pooled" column:
+- M40
+- M95
+Please fill in "Date Child Suspensions Pooled" for these multiplexed suspensions.
+
+In the "GEMs" sheet of the "Chromium" workbook, the following Chromium runs could not be processed:
+- CR77, run by Person: GEMs G0266 has no OCM barcodes, so it must be loaded with exactly one suspension or suspension pool, but it has 0
+- CR143, run by Person: GEMs G0431 has no OCM barcodes, so it must be loaded with exactly one suspension or suspension pool, but it has 0
+- CR153, run by Person: GEMs G0455 has no OCM barcodes, so it must be loaded with exactly one suspension or suspension pool, but it has 0
+Please check these Chromium runs.
+
+In the "cDNA" sheet of the "Chromium" workbook, the following cDNA have nothing in the "Date Prepared" column:
+- 26CH082-C3
+- 26CH082-C4
+- 26CH103-C1
+- 26CH103-C2
+Please fill in "Date Prepared" for these cDNA.
+
+In the "cDNA" sheet of the "Chromium" workbook, the following cDNA are duplicates of others:
+- 26CH089-C2, prepared by Person
+Please make sure each of these cDNA is unique.
+
+60 other problems can't be fixed by editing the workbooks.

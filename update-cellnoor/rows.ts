@@ -1,6 +1,13 @@
 import * as z from "zod";
-import { reportLocalError, type Api } from "./api.ts";
+import { reportLocalError, writeError, type Api } from "./api.ts";
 import type { RawRow } from "./export-workbook.ts";
+import {
+  UnknownReference,
+  UnknownValue,
+  type Entity,
+  type Problem,
+  type Subject,
+} from "./report.ts";
 
 export type Columns = Record<string, string | string[]>;
 
@@ -61,33 +68,35 @@ export const optionalEmail = z.preprocess(
 export const emails = z
   .array(email)
   .transform((addresses) => [...new Set(addresses)]);
+const timestamp = z.string({ error: "should be a date" });
 export const startOfWorkday = z.preprocess(
   blankTo(undefined, toEasternStandardTime("09:00")),
-  z.string(),
+  timestamp,
 );
 export const optionalStartOfWorkday = z.preprocess(
   blankTo(null, toEasternStandardTime("09:00")),
-  z.string().nullable(),
+  timestamp.nullable(),
 );
 export const endOfWorkday = z.preprocess(
   blankTo(undefined, toEasternStandardTime("16:00")),
-  z.string(),
+  timestamp,
 );
 export const optionalEndOfWorkday = z.preprocess(
   blankTo(null, toEasternStandardTime("16:00")),
-  z.string().nullable(),
+  timestamp.nullable(),
 );
 export const optionalNumber = z.preprocess(
   blankTo(null, (value) => value),
-  z.number().nullable(),
+  z.number({ error: "should be a number" }).nullable(),
 );
 export const flag = z.preprocess(
   blankTo(false, (value) => value),
-  z.boolean(),
+  z.boolean({ error: "should be TRUE or FALSE" }),
 );
 
 export async function parseRows<Schema extends z.ZodType>(
   api: Api,
+  entity: Entity,
   schema: Schema,
   rows: RawRow[],
   identify: (row: RawRow) => string,
@@ -99,11 +108,11 @@ export async function parseRows<Schema extends z.ZodType>(
     if (result.success) {
       parsed.push(result.data);
     } else {
-      await reportLocalError(
+      await reportInvalidRow(
         api,
-        identify(row),
+        { entity, id: identify(row) },
         row,
-        z.prettifyError(result.error),
+        result.error,
       );
     }
   }
@@ -111,8 +120,36 @@ export async function parseRows<Schema extends z.ZodType>(
   return parsed;
 }
 
+async function reportInvalidRow(
+  api: Api,
+  subject: Subject,
+  row: RawRow,
+  error: z.ZodError,
+): Promise<void> {
+  const problems = error.issues.map((issue): Problem => {
+    const field = String(issue.path[0]);
+    const value = row[field];
+    return isBlank(value)
+      ? { type: "missing_value", subject, field }
+      : {
+          type: "invalid_value",
+          subject,
+          field,
+          value: String(value),
+          message: issue.message,
+        };
+  });
+  api.problems.push(...problems);
+
+  await writeError(api, subject, {
+    request: row,
+    response: { error: z.prettifyError(error) },
+  });
+}
+
 export async function buildEach<Item, Body>(
   api: Api,
+  entity: Entity,
   items: Item[],
   identify: (item: Item) => string,
   build: (item: Item) => Body,
@@ -123,7 +160,7 @@ export async function buildEach<Item, Body>(
     try {
       bodies.push(build(item));
     } catch (error) {
-      await reportLocalError(api, identify(item), item, error);
+      await reportLocalError(api, { entity, id: identify(item) }, item, error);
     }
   }
 
@@ -138,6 +175,7 @@ export type WithoutMeasurements<T> = T extends unknown
 // A record whose measurements can't be built is still synced, without them
 export async function buildEachWithMeasurements<Item, Body, Measurement>(
   api: Api,
+  entities: { record: Entity; measurements: Entity },
   items: Item[],
   identify: (item: Item) => string,
   build: (item: Item) => Body,
@@ -146,11 +184,13 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
   const bodies: (Body & { measurements: Measurement[] })[] = [];
 
   for (const item of items) {
+    const id = identify(item);
+
     let body: Body;
     try {
       body = build(item);
     } catch (error) {
-      await reportLocalError(api, identify(item), item, error);
+      await reportLocalError(api, { entity: entities.record, id }, item, error);
       continue;
     }
 
@@ -160,7 +200,7 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
     } catch (error) {
       await reportLocalError(
         api,
-        `${identify(item)} measurements`,
+        { entity: entities.measurements, id },
         item,
         error,
       );
@@ -175,22 +215,23 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
 export function lookup<T>(
   ids: ReadonlyMap<string, T>,
   key: string,
-  description: string,
+  entity: Entity,
 ): T {
-  return orThrow(ids.get(key), key, description);
+  const value = ids.get(key);
+  if (value === undefined) {
+    throw new UnknownReference({ entity, id: key });
+  }
+  return value;
 }
 
 export function translate<T>(
   table: Readonly<Record<string, T>>,
   key: string,
-  description: string,
+  field: string,
 ): T {
-  return orThrow(table[key], key, description);
-}
-
-function orThrow<T>(value: T | undefined, key: string, description: string): T {
+  const value = table[key];
   if (value === undefined) {
-    throw new Error(`unknown ${description} '${key}'`);
+    throw new UnknownValue(field, key, Object.keys(table));
   }
   return value;
 }

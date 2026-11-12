@@ -22,6 +22,7 @@ import { syncChromiumRuns } from "./models/chromium-runs.ts";
 import { syncCdna } from "./models/cdna.ts";
 import { syncLibraries } from "./models/libraries.ts";
 import { syncChromiumDatasets } from "./models/chromium-datasets.ts";
+import { renderReport, responsiblePeople } from "./report.ts";
 
 const WORKBOOK_KEYS: WorkbookKey[] = [
   "people_and_institutions",
@@ -135,6 +136,12 @@ async function main() {
   });
 
   await syncChromiumDatasets(api, datasetDirs, libraryIds);
+
+  await Bun.write(`${api.errorsDir}/report.txt`, renderReport(
+      api.problems,
+      config.workbooks,
+      responsiblePeople(chromium),
+    ));
 }
 
 // A person without an OID is created without a Microsoft account
@@ -150,7 +157,12 @@ async function lookupOids(
     });
     return await listMemberOids(client);
   } catch (error) {
-    await reportLocalError(api, "microsoft-graph-users", null, error);
+    await reportLocalError(
+      api,
+      { entity: "microsoft_graph_request", id: "users" },
+      null,
+      error,
+    );
     return new Map();
   }
 }

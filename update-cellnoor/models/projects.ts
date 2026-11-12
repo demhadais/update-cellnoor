@@ -31,11 +31,12 @@ export async function syncProjects(
   rawRows: RawRow[],
   personIds: Map<string, string>,
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, ProjectRow, rawRows, (row) =>
+  const rows = await parseRows(api, "project", ProjectRow, rawRows, (row) =>
     String(row.name),
   );
   const projects = await buildEach(
     api,
+    "project",
     rows,
     (row) => row.name,
     (row) => buildProject(row, personIds),
@@ -52,7 +53,7 @@ export async function syncProjects(
     if (!current) {
       const created = await send(
         api,
-        project.name,
+        { entity: "project", id: project.name },
         project,
         api.client.POST("/projects", { body: project }),
       );
@@ -70,18 +71,24 @@ export async function syncProjects(
     if (!matches(record, current)) {
       await send(
         api,
-        project.name,
+        { entity: "project", id: project.name },
         record,
         api.client.PUT("/projects/{id}", { params, body: record }),
       );
     }
 
-    await syncIds(api, project.name, members, current.members, {
-      add: (ids) =>
-        api.client.POST("/projects/{id}/people", { params, body: ids }),
-      remove: (ids) =>
-        api.client.DELETE("/projects/{id}/people", { params, body: ids }),
-    });
+    await syncIds(
+      api,
+      { entity: "project", id: project.name },
+      members,
+      current.members,
+      {
+        add: (ids) =>
+          api.client.POST("/projects/{id}/people", { params, body: ids }),
+        remove: (ids) =>
+          api.client.DELETE("/projects/{id}/people", { params, body: ids }),
+      },
+    );
   }
 
   return ids;

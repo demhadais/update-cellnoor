@@ -18,6 +18,7 @@ import {
   translate,
   type WithoutMeasurements,
 } from "../rows.ts";
+import { MissingValue } from "../report.ts";
 import { syncMeasurements } from "../sync.ts";
 
 const SpecimenRow = z.object({
@@ -125,12 +126,12 @@ export function speciesFields(value: string): {
 export function typeFields(
   row: Pick<SpecimenRow, "type" | "preservation_method" | "embedded_in">,
 ): SpecimenTypeFields {
-  const type = translate(SPECIMEN_TYPES, row.type, "specimen type");
+  const type = translate(SPECIMEN_TYPES, row.type, "type");
   const preservation = row.preservation_method
     ? translate(
         PRESERVATION_METHODS,
         row.preservation_method,
-        "preservation method",
+        "preservation_method",
       )
     : undefined;
 
@@ -139,7 +140,7 @@ export function typeFields(
       return {
         type,
         embedded_in: row.embedded_in
-          ? translate(EMBEDDING_MATRICES, row.embedded_in, "embedding matrix")
+          ? translate(EMBEDDING_MATRICES, row.embedded_in, "embedded_in")
           : undefined,
         fixative: preservation?.fixative,
         thermal_preservation_method: preservation?.thermal_preservation_method,
@@ -164,11 +165,7 @@ export function buildSpecimenMeasurements(
 ): Schemas["NewSpecimenMeasurement"][] {
   const { measured_by } = row;
   if (!measured_by) {
-    throw new Error(
-      row.rin === null && row.dv200 === null
-        ? "QC measurement has no measurer, and no RIN or DV200"
-        : "QC measurement has no measurer",
-    );
+    throw new MissingValue("measured_by");
   }
 
   const quantities = [
@@ -201,10 +198,10 @@ function buildTransfer(
     return null;
   }
   if (returned_by === null) {
-    throw new Error("returned specimen has no returner");
+    throw new MissingValue("returned_by");
   }
   if (returned_at === null) {
-    throw new Error("returned specimen has no return date");
+    throw new MissingValue("returned_at");
   }
 
   return {
@@ -241,19 +238,21 @@ export async function syncSpecimens(
   rawRows: { specimens: RawRow[]; qcMeasurements: RawRow[] },
   ids: { people: Map<string, string>; projects: Map<string, string> },
 ): Promise<Map<string, SpecimenReference>> {
-  const rows = await parseRows(api, SpecimenRow, rawRows.specimens, (row) =>
+  const rows = await parseRows(api, "specimen", SpecimenRow, rawRows.specimens, (row) =>
     String(row.readable_id),
   );
   const qcRows = await parseRows(
     api,
+    "specimen_qc_measurement",
     QcMeasurementRow,
     rawRows.qcMeasurements,
-    (row) => `${row["Specimen ID"]} QC`,
+    (row) => String(row["Specimen ID"]),
   );
   const qcRowsBySpecimen = Map.groupBy(qcRows, (row) => row["Specimen ID"]);
 
   const specimens = await buildEachWithMeasurements(
     api,
+    { record: "specimen", measurements: "specimen_qc_measurement" },
     rows,
     (row) => row.readable_id,
     (row) => buildSpecimen(row, ids),
@@ -281,7 +280,7 @@ export async function syncSpecimens(
     if (!current) {
       const created = await send(
         api,
-        specimen.readable_id,
+        { entity: "specimen", id: specimen.readable_id },
         specimen,
         api.client.POST("/specimens", { body: specimen }),
       );
@@ -315,7 +314,7 @@ export async function deleteSpecimensWithoutSuspensions(
     if (!specimenIdsWithSuspensions.has(id)) {
       await send(
         api,
-        readable_id,
+        { entity: "specimen", id: readable_id },
         { delete: id },
         api.client.DELETE("/specimens/{id}", { params: { path: { id } } }),
       );
@@ -350,7 +349,7 @@ async function updateSpecimen(
   if (!matches(comparable, current)) {
     await send(
       api,
-      specimen.readable_id,
+      { entity: "specimen", id: specimen.readable_id },
       record,
       api.client.PUT("/specimens/{id}", { params, body: record }),
     );
@@ -358,7 +357,7 @@ async function updateSpecimen(
 
   await syncMeasurements(
     api,
-    specimen.readable_id,
+    { entity: "specimen_qc_measurement", id: specimen.readable_id },
     measurements,
     current.measurements,
     {
