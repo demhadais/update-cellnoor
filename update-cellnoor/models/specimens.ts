@@ -232,24 +232,37 @@ export function buildSpecimen(
 
 export type SpecimenReference = { id: string; received_at: string };
 
-// Returns a map from readable ID to the ID and received date
+// Only specimens that a row of the Suspensions sheet refers to are synced,
+// because `deleteSpecimensWithoutSuspensions` deletes the rest. Returns a map
+// from readable ID to the ID and received date
 export async function syncSpecimens(
   api: Api,
-  rawRows: { specimens: RawRow[]; qcMeasurements: RawRow[] },
+  rawRows: {
+    specimens: RawRow[];
+    qcMeasurements: RawRow[];
+    suspensions: RawRow[];
+  },
   ids: { people: Map<string, string>; projects: Map<string, string> },
 ): Promise<Map<string, SpecimenReference>> {
+  const readableId = (value: unknown) => String(value ?? "").trim();
+  const used = new Set(
+    rawRows.suspensions.map((row) => readableId(row.specimen_id)),
+  );
+
   const rows = await parseRows(
     api,
     "specimen",
     SpecimenRow,
-    rawRows.specimens,
+    rawRows.specimens.filter((row) => used.has(readableId(row.readable_id))),
     (row) => String(row.readable_id),
   );
   const qcRows = await parseRows(
     api,
     "specimen_qc_measurement",
     QcMeasurementRow,
-    rawRows.qcMeasurements,
+    rawRows.qcMeasurements.filter((row) =>
+      used.has(readableId(row["Specimen ID"])),
+    ),
     (row) => String(row["Specimen ID"]),
   );
   const qcRowsBySpecimen = Map.groupBy(qcRows, (row) => row["Specimen ID"]);

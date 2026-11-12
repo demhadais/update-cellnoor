@@ -99,6 +99,7 @@ async function main() {
       {
         specimens: sampleInventory.specimens,
         qcMeasurements: sampleInventory.qc_measurements,
+        suspensions: chromium.suspensions,
       },
       { people: personIds, projects: projectIds },
     );
