@@ -4,19 +4,21 @@ import { matches, unique } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
   email,
   lookup,
   notes,
-  optionalDate,
+  optionalStartOfWorkday,
   optionalEmail,
+  optionalEndOfWorkday,
   optionalNumber,
   optionalText,
   parseRows,
+  startOfWorkday,
   text,
   translate,
   type WithoutMeasurements,
 } from "../rows.ts";
+import { MissingValue } from "../report.ts";
 import { syncMeasurements } from "../sync.ts";
 
 const SpecimenRow = z.object({
@@ -24,8 +26,8 @@ const SpecimenRow = z.object({
   name: text,
   submitted_by: email,
   project_id: text,
-  received_at: date,
-  returned_at: optionalDate,
+  received_at: startOfWorkday,
+  returned_at: optionalEndOfWorkday,
   returned_by: optionalEmail,
   type: text,
   preservation_method: optionalText,
@@ -41,7 +43,7 @@ const QcMeasurementRow = z.object({
   dv200: optionalNumber,
   instrument_name: optionalText,
   measured_by: optionalEmail,
-  measured_at: optionalDate,
+  measured_at: optionalStartOfWorkday,
 });
 
 export type SpecimenRow = z.infer<typeof SpecimenRow>;
@@ -124,12 +126,12 @@ export function speciesFields(value: string): {
 export function typeFields(
   row: Pick<SpecimenRow, "type" | "preservation_method" | "embedded_in">,
 ): SpecimenTypeFields {
-  const type = translate(SPECIMEN_TYPES, row.type, "specimen type");
+  const type = translate(SPECIMEN_TYPES, row.type, "type");
   const preservation = row.preservation_method
     ? translate(
         PRESERVATION_METHODS,
         row.preservation_method,
-        "preservation method",
+        "preservation_method",
       )
     : undefined;
 
@@ -138,7 +140,7 @@ export function typeFields(
       return {
         type,
         embedded_in: row.embedded_in
-          ? translate(EMBEDDING_MATRICES, row.embedded_in, "embedding matrix")
+          ? translate(EMBEDDING_MATRICES, row.embedded_in, "embedded_in")
           : undefined,
         fixative: preservation?.fixative,
         thermal_preservation_method: preservation?.thermal_preservation_method,
@@ -163,11 +165,7 @@ export function buildSpecimenMeasurements(
 ): Schemas["NewSpecimenMeasurement"][] {
   const { measured_by } = row;
   if (!measured_by) {
-    throw new Error(
-      row.rin === null && row.dv200 === null
-        ? "QC measurement has no measurer, and no RIN or DV200"
-        : "QC measurement has no measurer",
-    );
+    throw new MissingValue("measured_by");
   }
 
   const quantities = [
@@ -188,6 +186,31 @@ export function buildSpecimenMeasurements(
   );
 }
 
+// A returned specimen goes back to its submitter (see cellnoor's
+// db/migrations/0037_foreign-keys.up.sql)
+function buildTransfer(
+  row: Pick<SpecimenRow, "submitted_by" | "returned_at" | "returned_by">,
+  personIds: Map<string, string>,
+): Schemas["SpecimenTransfer"] | null {
+  const { returned_at, returned_by } = row;
+
+  if (returned_at === null && returned_by === null) {
+    return null;
+  }
+  if (returned_by === null) {
+    throw new MissingValue("returned_by");
+  }
+  if (returned_at === null) {
+    throw new MissingValue("returned_at");
+  }
+
+  return {
+    given_at: returned_at,
+    given_by: lookup(personIds, returned_by, "person"),
+    given_to: lookup(personIds, row.submitted_by, "person"),
+  };
+}
+
 export function buildSpecimen(
   row: SpecimenRow,
   ids: { people: Map<string, string>; projects: Map<string, string> },
@@ -199,9 +222,7 @@ export function buildSpecimen(
     submitted_by: lookup(ids.people, row.submitted_by, "person"),
     project_id: lookup(ids.projects, row.project_id, "project"),
     received_or_created_at: row.received_at,
-    returned_at: row.returned_at,
-    returned_by:
-      row.returned_by && lookup(ids.people, row.returned_by, "person"),
+    transfer: buildTransfer(row, ids.people),
     tissue: row.tissue,
     additional_data: notes(row.notes),
     ...speciesFields(row.species),
@@ -217,19 +238,25 @@ export async function syncSpecimens(
   rawRows: { specimens: RawRow[]; qcMeasurements: RawRow[] },
   ids: { people: Map<string, string>; projects: Map<string, string> },
 ): Promise<Map<string, SpecimenReference>> {
-  const rows = await parseRows(api, SpecimenRow, rawRows.specimens, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "specimen",
+    SpecimenRow,
+    rawRows.specimens,
+    (row) => String(row.readable_id),
   );
   const qcRows = await parseRows(
     api,
+    "specimen_qc_measurement",
     QcMeasurementRow,
     rawRows.qcMeasurements,
-    (row) => `${row["Specimen ID"]} QC`,
+    (row) => String(row["Specimen ID"]),
   );
   const qcRowsBySpecimen = Map.groupBy(qcRows, (row) => row["Specimen ID"]);
 
   const specimens = await buildEachWithMeasurements(
     api,
+    { record: "specimen", measurements: "specimen_qc_measurement" },
     rows,
     (row) => row.readable_id,
     (row) => buildSpecimen(row, ids),
@@ -257,7 +284,7 @@ export async function syncSpecimens(
     if (!current) {
       const created = await send(
         api,
-        specimen.readable_id,
+        { entity: "specimen", id: specimen.readable_id },
         specimen,
         api.client.POST("/specimens", { body: specimen }),
       );
@@ -291,7 +318,7 @@ export async function deleteSpecimensWithoutSuspensions(
     if (!specimenIdsWithSuspensions.has(id)) {
       await send(
         api,
-        readable_id,
+        { entity: "specimen", id: readable_id },
         { delete: id },
         api.client.DELETE("/specimens/{id}", { params: { path: { id } } }),
       );
@@ -307,21 +334,26 @@ async function updateSpecimen(
   const { measurements, ...record } = specimen;
   const params = { path: { id: current.id } };
 
-  // `SpecimenDetailed` calls the type `type_` and doesn't return the
-  // preservation state (it's implied by the fixative and thermal preservation
-  // method) or the origin (it's implied by `parent_specimen_id`)
+  // `SpecimenDetailed` calls the type `type_`, flattens the transfer, and
+  // doesn't return the preservation state (it's implied by the fixative and
+  // thermal preservation method) or the origin (it's implied by
+  // `parent_specimen_id`)
   const comparable = {
     ...record,
     type: undefined,
     type_: record.type,
     preservation_state: undefined,
     origin: undefined,
+    transfer: undefined,
+    given_at: record.transfer?.given_at ?? null,
+    given_by: record.transfer?.given_by ?? null,
+    given_to: record.transfer?.given_to ?? null,
   };
 
   if (!matches(comparable, current)) {
     await send(
       api,
-      specimen.readable_id,
+      { entity: "specimen", id: specimen.readable_id },
       record,
       api.client.PUT("/specimens/{id}", { params, body: record }),
     );
@@ -329,7 +361,7 @@ async function updateSpecimen(
 
   await syncMeasurements(
     api,
-    specimen.readable_id,
+    { entity: "specimen_qc_measurement", id: specimen.readable_id },
     measurements,
     current.measurements,
     {

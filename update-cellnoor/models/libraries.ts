@@ -4,7 +4,7 @@ import { matches } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
+  startOfWorkday,
   emails,
   lookup,
   notes,
@@ -23,7 +23,7 @@ const LibraryRow = z.object({
   index_set_name: optionalText,
   number_of_sample_index_pcr_cycles: optionalNumber,
   target_reads_per_cell: optionalNumber,
-  prepared_at: date,
+  prepared_at: startOfWorkday,
   preparers: emails,
   notes: optionalText,
   concentration: optionalNumber,
@@ -87,7 +87,7 @@ export function buildLibrary(
 
   return {
     readable_id: row.readable_id,
-    cdna_id: lookup(ids.cdna, row.cdna_id, "cDNA"),
+    cdna_id: lookup(ids.cdna, row.cdna_id, "cdna"),
     number_of_sample_index_pcr_cycles:
       row.number_of_sample_index_pcr_cycles as number,
     target_reads_per_cell:
@@ -109,11 +109,12 @@ export async function syncLibraries(
     singleIndexSetNames: Set<string>;
   },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, LibraryRow, rawRows, (row) =>
+  const rows = await parseRows(api, "library", LibraryRow, rawRows, (row) =>
     String(row.readable_id),
   );
   const libraries = await buildEachWithMeasurements(
     api,
+    { record: "library", measurements: "library" },
     rows,
     (row) => row.readable_id,
     (row) => buildLibrary(row, ids),
@@ -131,7 +132,7 @@ export async function syncLibraries(
     if (!current) {
       const created = await send(
         api,
-        library.readable_id,
+        { entity: "library", id: library.readable_id },
         library,
         api.client.POST("/libraries", { body: library }),
       );
@@ -158,7 +159,7 @@ async function updateLibrary(
   if (!matches(record, current)) {
     await send(
       api,
-      library.readable_id,
+      { entity: "library", id: library.readable_id },
       record,
       api.client.PUT("/libraries/{id}", { params, body: record }),
     );
@@ -166,7 +167,7 @@ async function updateLibrary(
 
   await syncMeasurements(
     api,
-    library.readable_id,
+    { entity: "library", id: library.readable_id },
     measurements,
     current.measurements,
     {
@@ -177,10 +178,16 @@ async function updateLibrary(
     },
   );
 
-  await syncIds(api, library.readable_id, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/libraries/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/libraries/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "library", id: library.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/libraries/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/libraries/{id}/preparers", { params, body }),
+    },
+  );
 }

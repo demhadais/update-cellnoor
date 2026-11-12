@@ -1,11 +1,17 @@
 import * as z from "zod";
-import { fetchOrThrow, send, type Api, type Schemas } from "../api.ts";
+import {
+  fetchOrThrow,
+  reportParentFailed,
+  send,
+  type Api,
+  type Schemas,
+} from "../api.ts";
 import { matches, unique } from "../compare.ts";
 import type { AssaySpecification } from "../config.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEach,
-  date,
+  startOfWorkday,
   email,
   flag,
   lookup,
@@ -18,7 +24,7 @@ const GemsRow = z.object({
   readable_id: text,
   gem_well_readable_id: text,
   assay_id: text,
-  run_at: date,
+  run_at: startOfWorkday,
   run_by: email,
 });
 
@@ -95,7 +101,7 @@ function loadedEntity(row: GemsSuspensionRow, ids: Ids): LoadedEntity {
       suspension_pool_id: lookup(
         ids.pools,
         row.suspension_pool_id,
-        "suspension pool",
+        "suspension_pool",
       ),
     };
   }
@@ -185,7 +191,7 @@ export function buildChromiumRun(
 
   return {
     readable_id: first.readable_id,
-    assay_id: lookup(ids.assays, first.assay_id, "assay"),
+    assay_id: lookup(ids.assays, first.assay_id, "tenx_assay"),
     run_at: first.run_at,
     run_by: lookup(ids.people, first.run_by, "person"),
     succeeded: !rows.some((row) => row.failed),
@@ -204,14 +210,15 @@ export async function syncChromiumRuns(
   rawRows: { gems: RawRow[]; gemsSuspensions: RawRow[] },
   ids: Omit<Ids, "assays"> & { assayMap: Record<string, AssaySpecification> },
 ): Promise<Map<string, string>> {
-  const gemsRows = await parseRows(api, GemsRow, rawRows.gems, (row) =>
+  const gemsRows = await parseRows(api, "gems", GemsRow, rawRows.gems, (row) =>
     String(row.gem_well_readable_id),
   );
   const gemsSuspensionRows = await parseRows(
     api,
+    "gems_loading",
     GemsSuspensionRow,
     rawRows.gemsSuspensions,
-    (row) => `${row["GEMs ID"]} loading`,
+    (row) => String(row["GEMs ID"]),
   );
 
   const tenxAssays = await fetchOrThrow(api.client.GET("/10x-assays"));
@@ -222,6 +229,7 @@ export async function syncChromiumRuns(
 
   const runs = await buildEach(
     api,
+    "chromium_run",
     [...gemsRowsByRun.values()] as [GemsRow, ...GemsRow[]][],
     ([first]) => first.readable_id,
     (rows) => buildChromiumRun(rows, rowsByGems, allIds),
@@ -242,7 +250,7 @@ export async function syncChromiumRuns(
     if (!current) {
       const created = await send(
         api,
-        run.readable_id,
+        { entity: "chromium_run", id: run.readable_id },
         run,
         api.client.POST("/chromium-runs", { body: run }),
       );
@@ -255,12 +263,25 @@ export async function syncChromiumRuns(
     if (!matches(record, current)) {
       await send(
         api,
-        run.readable_id,
+        { entity: "chromium_run", id: run.readable_id },
         record,
         api.client.PUT("/chromium-runs/{id}", {
           params: { path: { id: current.id } },
           body: record,
         }),
+      );
+    }
+  }
+
+  for (const row of gemsRows) {
+    if (
+      !gemWellIds.has(row.gem_well_readable_id) &&
+      !existingByReadableId.has(row.readable_id)
+    ) {
+      reportParentFailed(
+        api,
+        { entity: "gems", id: row.gem_well_readable_id },
+        { entity: "chromium_run", id: row.readable_id },
       );
     }
   }

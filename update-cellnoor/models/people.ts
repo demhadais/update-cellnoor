@@ -42,7 +42,7 @@ export function buildPerson(
       institution_id: lookup(
         institutionIds,
         row.email.slice(row.email.indexOf("@") + 1),
-        "institution email domain",
+        "institution_email_domain",
       ),
       is_staff: row.is_staff,
       orcid: row.orcid,
@@ -62,11 +62,12 @@ export async function syncPeople(
   institutionIds: Map<string, string>,
   oids: Map<string, string>,
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, PersonRow, rawRows, (row) =>
-    String(row.email),
+  const rows = await parseRows(api, "person", PersonRow, rawRows, (row) =>
+    String(row.email).trim().toLowerCase(),
   );
   const desired = await buildEach(
     api,
+    "person",
     rows,
     (row) => row.email,
     (row) => buildPerson(row, institutionIds, oids),
@@ -99,7 +100,7 @@ export async function syncPeople(
 
     const created = await send(
       api,
-      email,
+      { entity: "person", id: email },
       person,
       api.client.POST("/people", { body: person }),
     );

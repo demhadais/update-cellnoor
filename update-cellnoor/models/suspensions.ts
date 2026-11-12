@@ -7,7 +7,7 @@ import {
   emails,
   lookup,
   notes,
-  optionalDate,
+  optionalStartOfWorkday,
   optionalEmail,
   optionalNumber,
   optionalText,
@@ -23,7 +23,7 @@ const SuspensionRow = z.object({
   readable_id: text,
   specimen_id: text,
   content: text,
-  created_at: optionalDate,
+  created_at: optionalStartOfWorkday,
   lysis_duration_minutes: optionalNumber,
   target_cell_recovery: optionalNumber,
   preparers: emails,
@@ -116,7 +116,7 @@ export function buildSuspensionMeasurements(
 ): Schemas["NewSuspensionMeasurement"][] {
   const content = toContent(row.content);
   const countingMethod = row.counting_method
-    ? translate(COUNTING_METHODS, row.counting_method, "counting method")
+    ? translate(COUNTING_METHODS, row.counting_method, "counting_method")
     : null;
 
   const groups = [
@@ -207,11 +207,16 @@ export async function syncSuspensions(
     specimens: Map<string, SpecimenReference>;
   },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, SuspensionRow, rawRows, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "suspension",
+    SuspensionRow,
+    rawRows,
+    (row) => String(row.readable_id),
   );
   const suspensions = await buildEachWithMeasurements(
     api,
+    { record: "suspension", measurements: "suspension" },
     rows,
     (row) => row.readable_id,
     (row) => buildSuspension(row, ids),
@@ -230,7 +235,7 @@ export async function syncSuspensions(
     if (!current) {
       const created = await send(
         api,
-        suspension.readable_id,
+        { entity: "suspension", id: suspension.readable_id },
         suspension,
         api.client.POST("/suspensions", { body: suspension }),
       );
@@ -257,7 +262,7 @@ async function updateSuspension(
   if (!matches(record, current)) {
     await send(
       api,
-      suspension.readable_id,
+      { entity: "suspension", id: suspension.readable_id },
       record,
       api.client.PUT("/suspensions/{id}", { params, body: record }),
     );
@@ -265,7 +270,7 @@ async function updateSuspension(
 
   await syncMeasurements(
     api,
-    suspension.readable_id,
+    { entity: "suspension", id: suspension.readable_id },
     measurements,
     current.measurements,
     {
@@ -276,10 +281,16 @@ async function updateSuspension(
     },
   );
 
-  await syncIds(api, suspension.readable_id, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/suspensions/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/suspensions/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "suspension", id: suspension.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/suspensions/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/suspensions/{id}/preparers", { params, body }),
+    },
+  );
 }

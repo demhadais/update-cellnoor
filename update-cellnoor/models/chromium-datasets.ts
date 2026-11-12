@@ -1,14 +1,14 @@
 import { basename } from "path";
 import {
   fetchOrThrow,
+  reportApiError,
   reportLocalError,
   send,
-  writeError,
   type Api,
   type Schemas,
 } from "../api.ts";
 import { matches } from "../compare.ts";
-import { lookup } from "../rows.ts";
+import { EASTERN_STANDARD_TIME, lookup } from "../rows.ts";
 
 const LIBRARY_READABLE_ID = /25E\d+-L\d+|26CH\d+-L\d+/g;
 
@@ -66,7 +66,7 @@ async function getDatasetDeliveryTime(datasetDir: string): Promise<Date> {
   // Just hardcode UTC-5 (Eastern Standard Time)
   const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
     .json()
-    .then((md) => `${md.metadata_generated_date}-05:00`);
+    .then((md) => `${md.metadata_generated_date}${EASTERN_STANDARD_TIME}`);
 
   return new Date(deliveredAt);
 }
@@ -123,7 +123,7 @@ export async function syncChromiumDatasets(
         current ??
         (await send(
           api,
-          dataset.name,
+          { entity: "chromium_dataset", id: dataset.name },
           dataset,
           api.client.POST("/chromium-datasets", { body: dataset }),
         ));
@@ -132,7 +132,12 @@ export async function syncChromiumDatasets(
         await syncFiles(api, target, dataset.name, files);
       }
     } catch (error) {
-      await reportLocalError(api, basename(datasetDir), datasetDir, error);
+      await reportLocalError(
+        api,
+        { entity: "chromium_dataset", id: basename(datasetDir) },
+        datasetDir,
+        error,
+      );
     }
   }
 }
@@ -147,7 +152,7 @@ async function updateDataset(
   if (!matches(record, current)) {
     await send(
       api,
-      dataset.name,
+      { entity: "chromium_dataset", id: dataset.name },
       record,
       api.client.PUT("/chromium-datasets/{id}", {
         params: { path: { id: current.id } },
@@ -217,9 +222,12 @@ async function uploadFiles(
   );
 
   if (!response.ok) {
-    await writeError(api, identifier, {
-      request: files.map(({ name }) => name),
-      response: { status: response.status, body: await response.text() },
-    });
+    await reportApiError(
+      api,
+      { entity: "chromium_dataset_file", id: identifier },
+      files.map(({ name }) => name),
+      response.status,
+      await response.text(),
+    );
   }
 }

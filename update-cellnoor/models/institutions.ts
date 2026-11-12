@@ -1,5 +1,11 @@
 import * as z from "zod";
-import { fetchOrThrow, send, type Api, type Schemas } from "../api.ts";
+import {
+  fetchOrThrow,
+  reportParentFailed,
+  send,
+  type Api,
+  type Schemas,
+} from "../api.ts";
 import { matches } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import { parseRows, text } from "../rows.ts";
@@ -47,10 +53,13 @@ export async function syncInstitutions(
   rawRows: RawRow[],
 ): Promise<Map<string, string>> {
   const names = new Set(Object.values(INSTITUTIONS_BY_EMAIL_DOMAIN));
+  const workbookRows = rawRows.filter((row) => names.has(String(row.name)));
+  const workbookNames = new Set(workbookRows.map((row) => String(row.name)));
   const rows = await parseRows(
     api,
+    "institution",
     InstitutionRow,
-    rawRows.filter((row) => names.has(String(row.name))),
+    workbookRows,
     (row) => String(row.name),
   );
 
@@ -66,7 +75,7 @@ export async function syncInstitutions(
     if (!current) {
       const created = await send(
         api,
-        body.name,
+        { entity: "institution", id: body.name },
         body,
         api.client.POST("/institutions", { body }),
       );
@@ -81,7 +90,7 @@ export async function syncInstitutions(
     if (!matches(body, current)) {
       await send(
         api,
-        body.name,
+        { entity: "institution", id: body.name },
         body,
         api.client.PUT("/institutions/{id}", {
           params: { path: { id: current.id } },
@@ -96,6 +105,12 @@ export async function syncInstitutions(
     const id = idsByName.get(name);
     if (id) {
       ids.set(domain, id);
+    } else if (workbookNames.has(name)) {
+      reportParentFailed(
+        api,
+        { entity: "institution_email_domain", id: domain },
+        { entity: "institution", id: name },
+      );
     }
   }
 

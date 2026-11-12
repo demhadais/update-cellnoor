@@ -54,6 +54,6 @@ describe("typeFields", () => {
         preservation_method: null,
         embedded_in: null,
       }),
-    ).toThrow("unknown specimen type 'Slide'");
+    ).toThrow("unknown type 'Slide'");
   });
 });

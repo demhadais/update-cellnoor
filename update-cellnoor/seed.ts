@@ -1,4 +1,10 @@
-import { writeError, type Api, type FetchResult, type Schemas } from "./api.ts";
+import {
+  reportApiError,
+  type Api,
+  type FetchResult,
+  type Schemas,
+} from "./api.ts";
+import type { Subject } from "./report.ts";
 
 export type SeedData = {
   single_index_set_urls: string[];
@@ -26,7 +32,7 @@ export async function uploadSeedData(
 
     await sendIgnoringConflict(
       api,
-      url,
+      { entity: "index_set", id: url },
       indexSets,
       api.client.POST("/index-sets/single", { body: indexSets }),
     );
@@ -40,7 +46,7 @@ export async function uploadSeedData(
 
     await sendIgnoringConflict(
       api,
-      url,
+      { entity: "index_set", id: url },
       indexSets,
       api.client.POST("/index-sets/dual", { body: indexSets }),
     );
@@ -49,7 +55,10 @@ export async function uploadSeedData(
   for (const assay of seedData.tenx_assays) {
     await sendIgnoringConflict(
       api,
-      `${assay.name} ${assay.chemistry_version} ${assay.sample_multiplexing} ${assay.chromium_chip}`,
+      {
+        entity: "tenx_assay",
+        id: `${assay.name} ${assay.chemistry_version} ${assay.sample_multiplexing} ${assay.chromium_chip}`,
+      },
       assay,
       api.client.POST("/10x-assays", { body: assay }),
     );
@@ -58,7 +67,7 @@ export async function uploadSeedData(
   for (const tag of seedData.multiplexing_tags) {
     await sendIgnoringConflict(
       api,
-      `${tag.type} ${tag.tag_id}`,
+      { entity: "multiplexing_tag", id: `${tag.type} ${tag.tag_id}` },
       tag,
       api.client.POST("/multiplexing-tags", { body: tag }),
     );
@@ -84,7 +93,7 @@ export function toDualIndexSets(
 
 async function sendIgnoringConflict(
   api: Api,
-  identifier: string,
+  subject: Subject,
   request: unknown,
   call: Promise<FetchResult<unknown>>,
 ): Promise<void> {
@@ -94,8 +103,5 @@ async function sendIgnoringConflict(
     return;
   }
 
-  await writeError(api, identifier, {
-    request,
-    response: { status: response.status, body: error },
-  });
+  await reportApiError(api, subject, request, response.status, error);
 }

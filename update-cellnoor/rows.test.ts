@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { date, emails, optionalNumber, withCanonicalColumns } from "./rows.ts";
+import {
+  emails,
+  optionalNumber,
+  startOfWorkday,
+  withCanonicalColumns,
+} from "./rows.ts";
 
 describe("withCanonicalColumns", () => {
   test("maps single headers and lists of headers, keeping the raw row", () => {
@@ -31,8 +36,10 @@ describe("cell schemas", () => {
     ]);
   });
 
-  test("dates become the calendar day at UTC midnight", () => {
-    expect(date.parse(new Date(2025, 1, 6))).toBe("2025-02-06T00:00:00.000Z");
+  test("dates become 9 AM Eastern Standard Time on the calendar day", () => {
+    expect(startOfWorkday.parse(new Date(2025, 1, 6))).toBe(
+      "2025-02-06T14:00:00.000Z",
+    );
   });
 
   test("0 and empty cells are not measurements", () => {

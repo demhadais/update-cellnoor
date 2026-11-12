@@ -4,7 +4,7 @@ import { matches, unique } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
   buildEachWithMeasurements,
-  date,
+  startOfWorkday,
   emails,
   lookup,
   notes,
@@ -22,7 +22,7 @@ const SuspensionPoolRow = z.object({
   readable_id: text,
   name: text,
   multiplexing_tag_type: optionalText,
-  pooled_at: date,
+  pooled_at: startOfWorkday,
   preparers: emails,
   notes: optionalText,
   pre_storage_concentration: optionalNumber,
@@ -67,7 +67,7 @@ export function buildPool(
     multiplexing_tag_type: translate(
       MULTIPLEXING_TAG_TYPES,
       row.multiplexing_tag_type,
-      "multiplexing tag type",
+      "multiplexing_tag_type",
     ),
     suspensions: members.map((member) => ({
       suspension_id: suspensionId(member),
@@ -132,8 +132,12 @@ export async function syncSuspensionPools(
   rawRows: { pools: RawRow[]; suspensions: RawRow[] },
   ids: { people: Map<string, string>; suspensions: Map<string, string> },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, SuspensionPoolRow, rawRows.pools, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "suspension_pool",
+    SuspensionPoolRow,
+    rawRows.pools,
+    (row) => String(row.readable_id),
   );
   // Invalid suspension rows are reported when syncing suspensions
   const pooledSuspensions = rawRows.suspensions.flatMap((row) => {
@@ -147,6 +151,7 @@ export async function syncSuspensionPools(
 
   const pools = await buildEachWithMeasurements(
     api,
+    { record: "suspension_pool", measurements: "suspension_pool" },
     rows,
     (row) => row.readable_id,
     (row) =>
@@ -172,7 +177,7 @@ export async function syncSuspensionPools(
     if (!current) {
       const created = await send(
         api,
-        pool.readable_id,
+        { entity: "suspension_pool", id: pool.readable_id },
         pool,
         api.client.POST("/suspension-pools", { body: pool }),
       );
@@ -199,7 +204,7 @@ async function updateSuspensionPool(
   if (!matches(record, current)) {
     await send(
       api,
-      pool.readable_id,
+      { entity: "suspension_pool", id: pool.readable_id },
       record,
       api.client.PUT("/suspension-pools/{id}", { params, body: record }),
     );
@@ -207,7 +212,7 @@ async function updateSuspensionPool(
 
   await syncMeasurements(
     api,
-    pool.readable_id,
+    { entity: "suspension_pool", id: pool.readable_id },
     measurements,
     current.measurements,
     {
@@ -224,10 +229,16 @@ async function updateSuspensionPool(
     },
   );
 
-  await syncIds(api, pool.readable_id, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/suspension-pools/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/suspension-pools/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "suspension_pool", id: pool.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/suspension-pools/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/suspension-pools/{id}/preparers", { params, body }),
+    },
+  );
 }
