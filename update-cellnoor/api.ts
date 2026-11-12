@@ -62,7 +62,14 @@ export async function send<T>(
   request: unknown,
   call: Promise<FetchResult<T>>,
 ): Promise<T | undefined> {
-  const { data, error, response } = await call;
+  let result: FetchResult<T>;
+  try {
+    result = await call;
+  } catch (thrown) {
+    await reportLocalError(api, subject, request, thrown);
+    return undefined;
+  }
+  const { data, error, response } = result;
 
   if (response.ok) {
     return data;

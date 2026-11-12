@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { MissingValue } from "../report.ts";
 import {
   buildLibrary,
   buildLibraryMeasurements,
@@ -50,9 +51,15 @@ describe("buildLibrary", () => {
     expect(buildLibrary(row, ids).target_reads_per_cell).toBe(50000);
   });
 
+  test("a library without SI PCR cycles is reported as a missing value", () => {
+    expect(() =>
+      buildLibrary({ ...row, number_of_sample_index_pcr_cycles: null }, ids),
+    ).toThrow(new MissingValue("number_of_sample_index_pcr_cycles"));
+  });
+
   test("TapeStation and Qubit measurements are both sent", () => {
     expect(
       buildLibraryMeasurements(row, "person").map((m) => m.data.type),
-    ).toEqual(["Electrophoretic", "Fluorometric"]);
+    ).toEqual(["electrophoretic", "fluorometric"]);
   });
 });

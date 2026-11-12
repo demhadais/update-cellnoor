@@ -12,7 +12,6 @@ const SheetSpecification = z.object({
       }),
     )
     .optional(),
-  date_columns: z.array(z.string()).optional(),
   columns: z
     .record(z.string(), z.union([z.string(), z.array(z.string())]))
     .default({}),
@@ -71,7 +70,7 @@ export const ConfigValidator = z.object({
 });
 
 export async function readConfig(path: string): Promise<Config> {
-  return ConfigValidator.parse(await import(path));
+  return ConfigValidator.parse(Bun.TOML.parse(await Bun.file(path).text()));
 }
 
 export type SheetSpecification = z.infer<typeof SheetSpecification>;

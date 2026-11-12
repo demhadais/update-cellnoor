@@ -12,6 +12,7 @@ type Sheet = { workbook: WorkbookSpecification; sheet: SheetSpecification };
 type EntityInfo = { plural: string; sheet?: (workbooks: Workbooks) => Sheet };
 
 const ENTITIES = {
+  run: { plural: "runs" },
   microsoft_graph_request: { plural: "Microsoft account lookups" },
   index_set: { plural: "index sets" },
   tenx_assay: { plural: "10x assays" },

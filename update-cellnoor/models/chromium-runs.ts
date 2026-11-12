@@ -1,6 +1,7 @@
 import * as z from "zod";
 import {
   fetchOrThrow,
+  reportLocalError,
   reportParentFailed,
   send,
   type Api,
@@ -260,6 +261,21 @@ export async function syncChromiumRuns(
 
     const { gem_wells, plexy, ...record } = run;
 
+    const currentWells = new Set(current.gem_wells.map((w) => w.readable_id));
+    const missingWells = (gemsRowsByRun.get(run.readable_id) ?? [])
+      .map((row) => row.gem_well_readable_id)
+      .filter((id) => !currentWells.has(id));
+    if (missingWells.length > 0) {
+      await reportLocalError(
+        api,
+        { entity: "chromium_run", id: run.readable_id },
+        run,
+        new Error(
+          `GEMs ${missingWells.join(", ")} can't be added, because cellnoor can't add GEMs to a Chromium run it already has`,
+        ),
+      );
+    }
+
     if (!matches(record, current)) {
       await send(
         api,
@@ -274,10 +290,7 @@ export async function syncChromiumRuns(
   }
 
   for (const row of gemsRows) {
-    if (
-      !gemWellIds.has(row.gem_well_readable_id) &&
-      !existingByReadableId.has(row.readable_id)
-    ) {
+    if (!gemWellIds.has(row.gem_well_readable_id)) {
       reportParentFailed(
         api,
         { entity: "gems", id: row.gem_well_readable_id },
