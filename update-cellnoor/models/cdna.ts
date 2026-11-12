@@ -11,6 +11,7 @@ import {
   optionalNumber,
   optionalText,
   parseRows,
+  required,
   text,
   translate,
   type WithoutMeasurements,
@@ -60,7 +61,7 @@ export function electrophoreticMeasurement(
     {
       ...measurement,
       data: {
-        type: "Electrophoretic",
+        type: "electrophoretic",
         instrument_name: "TapeStation",
         concentration: {
           value: values.concentration,
@@ -68,9 +69,9 @@ export function electrophoreticMeasurement(
           denominator_unit: "microliter",
         },
         sizing_range: [
-          values.sizing_range_minimum,
-          values.sizing_range_maximum,
-        ] as [number, number],
+          required(values.sizing_range_minimum, "sizing_range_minimum"),
+          required(values.sizing_range_maximum, "sizing_range_maximum"),
+        ],
         mean_size_bp: values.mean_size_bp ?? null,
       },
     },
@@ -102,7 +103,10 @@ export function buildCdna(
     libraryType === "gene_expression"
       ? {
           library_type: libraryType,
-          n_amplification_cycles: row.n_amplification_cycles as number,
+          n_amplification_cycles: required(
+            row.n_amplification_cycles,
+            "n_amplification_cycles",
+          ),
         }
       : { library_type: libraryType };
 
@@ -141,7 +145,7 @@ export async function syncCdna(
 
   const cdnaIds = new Map(existing.map((c) => [c.readable_id, c.id]));
 
-  for (const cdna of cdnas) {
+  for (const { body: cdna, measurementsFailed } of cdnas) {
     const current = existingByReadableId.get(cdna.readable_id);
 
     if (!current) {
@@ -157,7 +161,7 @@ export async function syncCdna(
       continue;
     }
 
-    await updateCdna(api, cdna, current);
+    await updateCdna(api, cdna, current, measurementsFailed);
   }
 
   return cdnaIds;
@@ -167,6 +171,7 @@ async function updateCdna(
   api: Api,
   cdna: NewCdna,
   current: { id: string; measurements: { id: string }[]; preparers: string[] },
+  measurementsFailed: boolean,
 ): Promise<void> {
   const params = { path: { id: current.id } };
   const record: Schemas["CdnaSimpleFields"] = {
@@ -184,18 +189,20 @@ async function updateCdna(
     );
   }
 
-  await syncMeasurements(
-    api,
-    { entity: "cdna", id: cdna.readable_id },
-    cdna.measurements,
-    current.measurements,
-    {
-      add: (body) =>
-        api.client.POST("/cdna/{id}/measurements", { params, body }),
-      remove: (body) =>
-        api.client.DELETE("/cdna/{id}/measurements", { params, body }),
-    },
-  );
+  if (!measurementsFailed) {
+    await syncMeasurements(
+      api,
+      { entity: "cdna", id: cdna.readable_id },
+      cdna.measurements,
+      current.measurements,
+      {
+        add: (body) =>
+          api.client.POST("/cdna/{id}/measurements", { params, body }),
+        remove: (body) =>
+          api.client.DELETE("/cdna/{id}/measurements", { params, body }),
+      },
+    );
+  }
 
   await syncIds(
     api,

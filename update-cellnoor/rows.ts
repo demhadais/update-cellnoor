@@ -2,6 +2,7 @@ import * as z from "zod";
 import { reportLocalError, writeError, type Api } from "./api.ts";
 import type { RawRow } from "./export-workbook.ts";
 import {
+  MissingValue,
   UnknownReference,
   UnknownValue,
   type Entity,
@@ -172,7 +173,13 @@ export type WithoutMeasurements<T> = T extends unknown
   ? Omit<T, "measurements">
   : never;
 
-// A record whose measurements can't be built is still synced, without them
+export type Built<Body, Measurement> = {
+  body: Body & { measurements: Measurement[] };
+  measurementsFailed: boolean;
+};
+
+// A record whose measurements can't be built is still synced. It is created
+// without measurements, and an existing record's measurements are left alone
 export async function buildEachWithMeasurements<Item, Body, Measurement>(
   api: Api,
   entities: { record: Entity; measurements: Entity },
@@ -180,8 +187,8 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
   identify: (item: Item) => string,
   build: (item: Item) => Body,
   buildMeasurements: (item: Item, body: Body) => Measurement[],
-): Promise<(Body & { measurements: Measurement[] })[]> {
-  const bodies: (Body & { measurements: Measurement[] })[] = [];
+): Promise<Built<Body, Measurement>[]> {
+  const built: Built<Body, Measurement>[] = [];
 
   for (const item of items) {
     const id = identify(item);
@@ -195,9 +202,11 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
     }
 
     let measurements: Measurement[] = [];
+    let measurementsFailed = false;
     try {
       measurements = buildMeasurements(item, body);
     } catch (error) {
+      measurementsFailed = true;
       await reportLocalError(
         api,
         { entity: entities.measurements, id },
@@ -206,10 +215,10 @@ export async function buildEachWithMeasurements<Item, Body, Measurement>(
       );
     }
 
-    bodies.push({ ...body, measurements });
+    built.push({ body: { ...body, measurements }, measurementsFailed });
   }
 
-  return bodies;
+  return built;
 }
 
 export function lookup<T>(
@@ -232,6 +241,13 @@ export function translate<T>(
   const value = table[key];
   if (value === undefined) {
     throw new UnknownValue(field, key, Object.keys(table));
+  }
+  return value;
+}
+
+export function required<T>(value: T | null, field: string): T {
+  if (value === null) {
+    throw new MissingValue(field);
   }
   return value;
 }

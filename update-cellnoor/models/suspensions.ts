@@ -229,7 +229,7 @@ export async function syncSuspensions(
 
   const suspensionIds = new Map(existing.map((s) => [s.readable_id, s.id]));
 
-  for (const suspension of suspensions) {
+  for (const { body: suspension, measurementsFailed } of suspensions) {
     const current = existingByReadableId.get(suspension.readable_id);
 
     if (!current) {
@@ -245,7 +245,7 @@ export async function syncSuspensions(
       continue;
     }
 
-    await updateSuspension(api, suspension, current);
+    await updateSuspension(api, suspension, current, measurementsFailed);
   }
 
   return suspensionIds;
@@ -255,6 +255,7 @@ async function updateSuspension(
   api: Api,
   suspension: NewSuspension,
   current: Schemas["SuspensionDetailed"],
+  measurementsFailed: boolean,
 ): Promise<void> {
   const { measurements, preparers, ...record } = suspension;
   const params = { path: { id: current.id } };
@@ -268,18 +269,20 @@ async function updateSuspension(
     );
   }
 
-  await syncMeasurements(
-    api,
-    { entity: "suspension", id: suspension.readable_id },
-    measurements,
-    current.measurements,
-    {
-      add: (body) =>
-        api.client.POST("/suspensions/{id}/measurements", { params, body }),
-      remove: (body) =>
-        api.client.DELETE("/suspensions/{id}/measurements", { params, body }),
-    },
-  );
+  if (!measurementsFailed) {
+    await syncMeasurements(
+      api,
+      { entity: "suspension", id: suspension.readable_id },
+      measurements,
+      current.measurements,
+      {
+        add: (body) =>
+          api.client.POST("/suspensions/{id}/measurements", { params, body }),
+        remove: (body) =>
+          api.client.DELETE("/suspensions/{id}/measurements", { params, body }),
+      },
+    );
+  }
 
   await syncIds(
     api,

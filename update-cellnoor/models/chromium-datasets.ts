@@ -107,8 +107,21 @@ export async function syncChromiumDatasets(
     ]),
   );
 
+  const dirsByLibraries = Map.groupBy(datasetDirs, (dir) =>
+    librariesKey(libraryReadableIds(dir)),
+  );
+
   for (const datasetDir of datasetDirs) {
     try {
+      const sameLibraries = (
+        dirsByLibraries.get(librariesKey(libraryReadableIds(datasetDir))) ?? []
+      ).filter((dir) => dir !== datasetDir);
+      if (sameLibraries.length > 0) {
+        throw new Error(
+          `has the same libraries as ${sameLibraries.join(", ")}, so none of them were uploaded`,
+        );
+      }
+
       const dataset = await buildDataset(datasetDir, libraryIds);
       const files = await listFiles(datasetDir);
       const current = existingByLibraries.get(

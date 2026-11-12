@@ -75,72 +75,82 @@ async function main() {
     outputDir,
   });
 
-  const singleIndexSetNames = await uploadSeedData(api, seedData as SeedData);
+  try {
+    const singleIndexSetNames = await uploadSeedData(api, seedData as SeedData);
 
-  const institutionIds = await syncInstitutions(
-    api,
-    peopleAndInstitutions.institutions,
-  );
-  const personIds = await syncPeople(
-    api,
-    peopleAndInstitutions.people,
-    institutionIds,
-    await lookupOids(config, api),
-  );
-  const projectIds = await syncProjects(
-    api,
-    peopleAndInstitutions.labs,
-    personIds,
-  );
+    const institutionIds = await syncInstitutions(
+      api,
+      peopleAndInstitutions.institutions,
+    );
+    const personIds = await syncPeople(
+      api,
+      peopleAndInstitutions.people,
+      institutionIds,
+      await lookupOids(config, api),
+    );
+    const projectIds = await syncProjects(
+      api,
+      peopleAndInstitutions.labs,
+      personIds,
+    );
 
-  const specimens = await syncSpecimens(
-    api,
-    {
-      specimens: sampleInventory.specimens,
-      qcMeasurements: sampleInventory.qc_measurements,
-    },
-    { people: personIds, projects: projectIds },
-  );
+    const specimens = await syncSpecimens(
+      api,
+      {
+        specimens: sampleInventory.specimens,
+        qcMeasurements: sampleInventory.qc_measurements,
+      },
+      { people: personIds, projects: projectIds },
+    );
 
-  const suspensionIds = await syncSuspensions(api, chromium.suspensions, {
-    people: personIds,
-    specimens,
-  });
-  await deleteSpecimensWithoutSuspensions(api);
-  const poolIds = await syncSuspensionPools(
-    api,
-    {
-      pools: chromium.multiplexed_suspensions,
-      suspensions: chromium.suspensions,
-    },
-    { people: personIds, suspensions: suspensionIds },
-  );
-  const gemWellIds = await syncChromiumRuns(
-    api,
-    { gems: chromium.gems, gemsSuspensions: chromium.gems_suspensions },
-    {
+    const suspensionIds = await syncSuspensions(api, chromium.suspensions, {
       people: personIds,
-      suspensions: suspensionIds,
-      pools: poolIds,
-      assayMap: config.assay_map,
-    },
-  );
-  const cdnaIds = await syncCdna(api, chromium.cdna, {
-    people: personIds,
-    gemWells: gemWellIds,
-  });
-  const libraryIds = await syncLibraries(api, chromium.libraries, {
-    people: personIds,
-    cdna: cdnaIds,
-    singleIndexSetNames,
-  });
+      specimens,
+    });
+    await deleteSpecimensWithoutSuspensions(api);
+    const poolIds = await syncSuspensionPools(
+      api,
+      {
+        pools: chromium.multiplexed_suspensions,
+        suspensions: chromium.suspensions,
+      },
+      { people: personIds, specimens, suspensions: suspensionIds },
+    );
+    const gemWellIds = await syncChromiumRuns(
+      api,
+      { gems: chromium.gems, gemsSuspensions: chromium.gems_suspensions },
+      {
+        people: personIds,
+        suspensions: suspensionIds,
+        pools: poolIds,
+        assayMap: config.assay_map,
+      },
+    );
+    const cdnaIds = await syncCdna(api, chromium.cdna, {
+      people: personIds,
+      gemWells: gemWellIds,
+    });
+    const libraryIds = await syncLibraries(api, chromium.libraries, {
+      people: personIds,
+      cdna: cdnaIds,
+      singleIndexSetNames,
+    });
 
-  await syncChromiumDatasets(api, datasetDirs, libraryIds);
-
-  await Bun.write(
-    `${api.errorsDir}/report.txt`,
-    renderReport(api.problems, config.workbooks, responsiblePeople(chromium)),
-  );
+    await syncChromiumDatasets(api, datasetDirs, libraryIds);
+  } catch (error) {
+    await reportLocalError(
+      api,
+      { entity: "run", id: "stopped early" },
+      null,
+      error,
+    );
+    throw error;
+  } finally {
+    await Bun.write(
+      `${api.errorsDir}/report.txt`,
+      renderReport(api.problems, config.workbooks, responsiblePeople(chromium)),
+    );
+  }
 }
 
 // A person without an OID is created without a Microsoft account

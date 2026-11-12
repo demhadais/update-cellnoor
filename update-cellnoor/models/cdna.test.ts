@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { MissingValue } from "../report.ts";
 import { buildCdna, buildCdnaMeasurements, type CdnaRow } from "./cdna.ts";
 
 const ids = {
@@ -30,6 +31,18 @@ describe("buildCdna", () => {
     });
   });
 
+  test("gene expression cDNA without one is reported as a missing value", () => {
+    expect(() =>
+      buildCdna(cdna({ n_amplification_cycles: null }), ids),
+    ).toThrow(new MissingValue("n_amplification_cycles"));
+  });
+
+  test("a TapeStation concentration needs a gate range", () => {
+    expect(() =>
+      buildCdnaMeasurements(cdna({ sizing_range_minimum: null }), "person"),
+    ).toThrow(new MissingValue("sizing_range_minimum"));
+  });
+
   test("other cDNA doesn't", () => {
     const built = buildCdna(
       cdna({ library_type: "Chromatin Accessibility" }),
@@ -45,7 +58,7 @@ describe("buildCdna", () => {
         measured_by: "person",
         measured_at: "2025-05-16T00:00:00.000Z",
         data: {
-          type: "Electrophoretic",
+          type: "electrophoretic",
           instrument_name: "TapeStation",
           concentration: {
             value: 182500,

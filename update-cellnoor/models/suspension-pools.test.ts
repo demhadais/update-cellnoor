@@ -32,12 +32,14 @@ const members: PooledSuspensionRow[] = [
   {
     "Pooled Into ID": "M1",
     readable_id: "25E1-S1",
+    specimen_id: "25SP1",
     content: "Cells",
     multiplexing_tag_id: "BC001",
   },
   {
     "Pooled Into ID": "M1",
     readable_id: "25E1-S2",
+    specimen_id: "25SP2",
     content: "Cells",
     multiplexing_tag_id: "BC002",
   },
@@ -52,6 +54,13 @@ describe("buildPool", () => {
         { suspension_id: "s2", tag_id: "BC002" },
       ],
     });
+  });
+
+  test("a tagged pool needs a tag for each suspension", () => {
+    const untagged = members.map((m) => ({ ...m, multiplexing_tag_id: null }));
+    expect(() => buildPool(pool({}), untagged, suspensionIds)).toThrow(
+      "suspension 25E1-S1 has no multiplexing tag ID",
+    );
   });
 
   test("a pool without a tag type (genetic multiplexing) lists only IDs", () => {

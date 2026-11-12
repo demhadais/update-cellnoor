@@ -1,5 +1,11 @@
 import * as z from "zod";
-import { fetchOrThrow, send, type Api, type Schemas } from "../api.ts";
+import {
+  fetchOrThrow,
+  reportLocalError,
+  send,
+  type Api,
+  type Schemas,
+} from "../api.ts";
 import { matches, unique } from "../compare.ts";
 import type { RawRow } from "../export-workbook.ts";
 import {
@@ -16,6 +22,7 @@ import {
   type WithoutMeasurements,
 } from "../rows.ts";
 import { syncIds, syncMeasurements } from "../sync.ts";
+import type { SpecimenReference } from "./specimens.ts";
 import { buildQuantities, toContent } from "./suspensions.ts";
 
 const SuspensionPoolRow = z.object({
@@ -36,6 +43,7 @@ const SuspensionPoolRow = z.object({
 const PooledSuspensionRow = z.object({
   "Pooled Into ID": text,
   readable_id: text,
+  specimen_id: text,
   content: text,
   multiplexing_tag_id: optionalText,
 });
@@ -69,10 +77,17 @@ export function buildPool(
       row.multiplexing_tag_type,
       "multiplexing_tag_type",
     ),
-    suspensions: members.map((member) => ({
-      suspension_id: suspensionId(member),
-      tag_id: member.multiplexing_tag_id as string,
-    })),
+    suspensions: members.map((member) => {
+      if (member.multiplexing_tag_id === null) {
+        throw new Error(
+          `suspension ${member.readable_id} has no multiplexing tag ID`,
+        );
+      }
+      return {
+        suspension_id: suspensionId(member),
+        tag_id: member.multiplexing_tag_id,
+      };
+    }),
   };
 }
 
@@ -130,7 +145,11 @@ export function buildSuspensionPool(
 export async function syncSuspensionPools(
   api: Api,
   rawRows: { pools: RawRow[]; suspensions: RawRow[] },
-  ids: { people: Map<string, string>; suspensions: Map<string, string> },
+  ids: {
+    people: Map<string, string>;
+    specimens: Map<string, SpecimenReference>;
+    suspensions: Map<string, string>;
+  },
 ): Promise<Map<string, string>> {
   const rows = await parseRows(
     api,
@@ -171,7 +190,7 @@ export async function syncSuspensionPools(
 
   const poolIds = new Map(existing.map((p) => [p.readable_id, p.id]));
 
-  for (const pool of pools) {
+  for (const { body: pool, measurementsFailed } of pools) {
     const current = existingByReadableId.get(pool.readable_id);
 
     if (!current) {
@@ -187,7 +206,27 @@ export async function syncSuspensionPools(
       continue;
     }
 
-    await updateSuspensionPool(api, pool, current);
+    // `SuspensionPoolDetailed` lists the pooled suspensions' specimens, not
+    // the suspensions themselves
+    const currentSpecimens = new Set(current.specimens.map((s) => s.id));
+    const missingMembers = (membersByPool.get(pool.readable_id) ?? [])
+      .filter((member) => {
+        const specimen = ids.specimens.get(member.specimen_id);
+        return specimen !== undefined && !currentSpecimens.has(specimen.id);
+      })
+      .map((member) => member.readable_id);
+    if (missingMembers.length > 0) {
+      await reportLocalError(
+        api,
+        { entity: "suspension_pool", id: pool.readable_id },
+        pool,
+        new Error(
+          `suspensions ${missingMembers.join(", ")} can't be added, because cellnoor can't add suspensions to a pool it already has`,
+        ),
+      );
+    }
+
+    await updateSuspensionPool(api, pool, current, measurementsFailed);
   }
 
   return poolIds;
@@ -197,6 +236,7 @@ async function updateSuspensionPool(
   api: Api,
   pool: NewSuspensionPool,
   current: Schemas["SuspensionPoolDetailed"],
+  measurementsFailed: boolean,
 ): Promise<void> {
   const { measurements, preparers, pool: _, ...record } = pool;
   const params = { path: { id: current.id } };
@@ -210,24 +250,26 @@ async function updateSuspensionPool(
     );
   }
 
-  await syncMeasurements(
-    api,
-    { entity: "suspension_pool", id: pool.readable_id },
-    measurements,
-    current.measurements,
-    {
-      add: (body) =>
-        api.client.POST("/suspension-pools/{id}/measurements", {
-          params,
-          body,
-        }),
-      remove: (body) =>
-        api.client.DELETE("/suspension-pools/{id}/measurements", {
-          params,
-          body,
-        }),
-    },
-  );
+  if (!measurementsFailed) {
+    await syncMeasurements(
+      api,
+      { entity: "suspension_pool", id: pool.readable_id },
+      measurements,
+      current.measurements,
+      {
+        add: (body) =>
+          api.client.POST("/suspension-pools/{id}/measurements", {
+            params,
+            body,
+          }),
+        remove: (body) =>
+          api.client.DELETE("/suspension-pools/{id}/measurements", {
+            params,
+            body,
+          }),
+      },
+    );
+  }
 
   await syncIds(
     api,

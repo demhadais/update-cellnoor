@@ -11,6 +11,7 @@ import {
   optionalNumber,
   optionalText,
   parseRows,
+  required,
   text,
   type WithoutMeasurements,
 } from "../rows.ts";
@@ -61,8 +62,8 @@ export function buildLibraryMeasurements(
           {
             ...measurement,
             data: {
-              type: "Fluorometric",
-              instrument_name: "Qubit",
+              type: "fluorometric",
+              instrument_name: "Qubit Fluorometer",
               concentration: {
                 value: row.qubit_concentration,
                 numerator_unit: "nanogram",
@@ -88,8 +89,10 @@ export function buildLibrary(
   return {
     readable_id: row.readable_id,
     cdna_id: lookup(ids.cdna, row.cdna_id, "cdna"),
-    number_of_sample_index_pcr_cycles:
-      row.number_of_sample_index_pcr_cycles as number,
+    number_of_sample_index_pcr_cycles: required(
+      row.number_of_sample_index_pcr_cycles,
+      "number_of_sample_index_pcr_cycles",
+    ),
     target_reads_per_cell:
       row.target_reads_per_cell && Math.round(row.target_reads_per_cell * 1000),
     prepared_at: row.prepared_at,
@@ -126,7 +129,7 @@ export async function syncLibraries(
 
   const libraryIds = new Map(existing.map((l) => [l.readable_id, l.id]));
 
-  for (const library of libraries) {
+  for (const { body: library, measurementsFailed } of libraries) {
     const current = existingByReadableId.get(library.readable_id);
 
     if (!current) {
@@ -142,7 +145,7 @@ export async function syncLibraries(
       continue;
     }
 
-    await updateLibrary(api, library, current);
+    await updateLibrary(api, library, current, measurementsFailed);
   }
 
   return libraryIds;
@@ -152,6 +155,7 @@ async function updateLibrary(
   api: Api,
   library: NewLibrary,
   current: { id: string; measurements: { id: string }[]; preparers: string[] },
+  measurementsFailed: boolean,
 ): Promise<void> {
   const { measurements, preparers, ...record } = library;
   const params = { path: { id: current.id } };
@@ -165,18 +169,20 @@ async function updateLibrary(
     );
   }
 
-  await syncMeasurements(
-    api,
-    { entity: "library", id: library.readable_id },
-    measurements,
-    current.measurements,
-    {
-      add: (body) =>
-        api.client.POST("/libraries/{id}/measurements", { params, body }),
-      remove: (body) =>
-        api.client.DELETE("/libraries/{id}/measurements", { params, body }),
-    },
-  );
+  if (!measurementsFailed) {
+    await syncMeasurements(
+      api,
+      { entity: "library", id: library.readable_id },
+      measurements,
+      current.measurements,
+      {
+        add: (body) =>
+          api.client.POST("/libraries/{id}/measurements", { params, body }),
+        remove: (body) =>
+          api.client.DELETE("/libraries/{id}/measurements", { params, body }),
+      },
+    );
+  }
 
   await syncIds(
     api,

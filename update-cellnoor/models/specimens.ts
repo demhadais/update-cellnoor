@@ -278,7 +278,7 @@ export async function syncSpecimens(
     ]),
   );
 
-  for (const specimen of specimens) {
+  for (const { body: specimen, measurementsFailed } of specimens) {
     const current = existingByReadableId.get(specimen.readable_id);
 
     if (!current) {
@@ -297,7 +297,7 @@ export async function syncSpecimens(
       continue;
     }
 
-    await updateSpecimen(api, specimen, current);
+    await updateSpecimen(api, specimen, current, measurementsFailed);
   }
 
   return references;
@@ -330,6 +330,7 @@ async function updateSpecimen(
   api: Api,
   specimen: NewSpecimen,
   current: Schemas["SpecimenDetailed"],
+  measurementsFailed: boolean,
 ): Promise<void> {
   const { measurements, ...record } = specimen;
   const params = { path: { id: current.id } };
@@ -359,16 +360,18 @@ async function updateSpecimen(
     );
   }
 
-  await syncMeasurements(
-    api,
-    { entity: "specimen_qc_measurement", id: specimen.readable_id },
-    measurements,
-    current.measurements,
-    {
-      add: (body) =>
-        api.client.POST("/specimens/{id}/measurements", { params, body }),
-      remove: (body) =>
-        api.client.DELETE("/specimens/{id}/measurements", { params, body }),
-    },
-  );
+  if (!measurementsFailed) {
+    await syncMeasurements(
+      api,
+      { entity: "specimen_qc_measurement", id: specimen.readable_id },
+      measurements,
+      current.measurements,
+      {
+        add: (body) =>
+          api.client.POST("/specimens/{id}/measurements", { params, body }),
+        remove: (body) =>
+          api.client.DELETE("/specimens/{id}/measurements", { params, body }),
+      },
+    );
+  }
 }
