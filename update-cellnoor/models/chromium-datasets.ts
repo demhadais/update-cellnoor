@@ -65,7 +65,11 @@ async function listFiles(datasetDir: string): Promise<DatasetFile[]> {
 async function getDatasetDeliveryTime(datasetDir: string): Promise<Date> {
   // Just hardcode UTC-5 (Eastern Standard Time)
   const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
-    .json()
+    .text()
+    // This step is necessary because cellranger-arc outputs JSON with `NaN`, causing a parsing failure. We just need to
+    // make the JSON work, and we don't care if we accidentally replace NaN inside a string (which would be valid JSON)
+    .then((rawJson) => rawJson.replaceAll("NaN", "null"))
+    .then(JSON.parse)
     .then((md) => `${md.metadata_generated_date}${EASTERN_STANDARD_TIME}`);
 
   return new Date(deliveredAt);
