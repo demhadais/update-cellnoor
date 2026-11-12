@@ -316,8 +316,15 @@ function describe(
       };
     case "rejected": {
       const { body } = problem;
-      if (typeof body !== "object" || !("type" in body)) {
+      if (typeof body !== "object") {
         return undefined;
+      }
+      if (!("type" in body)) {
+        return {
+          header: `${these} could not be saved:`,
+          item: `- ${label}: ${body.message}`,
+          footer: `Please check these ${plural} using the messages above.`,
+        };
       }
 
       switch (body.type) {

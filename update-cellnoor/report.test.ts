@@ -47,3 +47,26 @@ test("a reference to a record with its own problem isn't repeated", () => {
     ].join("\n"),
   );
 });
+
+test("a JSON body rejection is printed with the API's message", () => {
+  const problems: Problem[] = [
+    {
+      type: "rejected",
+      subject: { entity: "library", id: "26CH082-L1" },
+      body: {
+        message:
+          "Failed to deserialize the JSON body into the target type: preparers: empty collection not allowed at line 1 column 200",
+        status: 422,
+      },
+    },
+  ];
+
+  expect(renderReport(problems, workbooks, new Map())).toBe(
+    [
+      `In the "Libraries" sheet of the "Chromium" workbook, the following libraries could not be saved:`,
+      "- 26CH082-L1: Failed to deserialize the JSON body into the target type: preparers: empty collection not allowed at line 1 column 200",
+      "Please check these libraries using the messages above.",
+      "",
+    ].join("\n"),
+  );
+});
