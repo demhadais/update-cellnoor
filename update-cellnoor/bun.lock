@@ -130,7 +130,7 @@
 
     "bundle-name": ["bundle-name@4.1.1", "", { "dependencies": { "run-applescript": "^7.0.0" } }, "sha512-DdH81/zPLVS11EUgWq3tEu/xn+EzljlMYooDNdzWEnFha3R3NBMpMV1UqYIpjYHV/SgpFKMIX1Oh7o06SjM/oA=="],
 
-    "cellnoor": ["cellnoor@github:thejacksonlaboratory/cellnoor#5674c66", {}, "TheJacksonLaboratory-cellnoor-5674c66", "sha512-dLJdnNrZHvHL48UOoUyV4SoLU8NUDegjz3ba+01mLA/E6rsgRKnDVo/HkNai3X3FLgZboXSeyw7nVMc16w5WPw=="],
+    "cellnoor": ["cellnoor@github:thejacksonlaboratory/cellnoor#2346c4c", {}, "TheJacksonLaboratory-cellnoor-2346c4c", "sha512-hr7+dzKZB+0vAtjeI0ZwTjN3cEqIkB02qw4mWgyZBy5uH8w/vXIGWLuoJXzVRPBqm8onRL1NmHUVW3y6EuMO5g=="],
 
     "debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 

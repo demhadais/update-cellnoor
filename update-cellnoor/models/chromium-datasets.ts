@@ -88,8 +88,11 @@ async function buildDataset(
   };
 }
 
-function librariesKey(libraryReadableIds: string[]): string {
-  return libraryReadableIds.toSorted().join(",");
+function datasetKey(deliveredAt: string, libraryReadableIds: string[]): string {
+  return JSON.stringify([
+    Date.parse(deliveredAt),
+    libraryReadableIds.toSorted(),
+  ]);
 }
 
 export async function syncChromiumDatasets(
@@ -100,32 +103,22 @@ export async function syncChromiumDatasets(
   const existing = await fetchOrThrow(
     api.client.GET("/chromium-datasets/detailed"),
   );
-  const existingByLibraries = new Map(
+  const existingByKey = new Map(
     existing.map((d) => [
-      librariesKey(d.libraries.map((l) => l.readable_id)),
+      datasetKey(
+        d.delivered_at,
+        d.libraries.map((l) => l.readable_id),
+      ),
       d,
     ]),
   );
 
-  const dirsByLibraries = Map.groupBy(datasetDirs, (dir) =>
-    librariesKey(libraryReadableIds(dir)),
-  );
-
   for (const datasetDir of datasetDirs) {
     try {
-      const sameLibraries = (
-        dirsByLibraries.get(librariesKey(libraryReadableIds(datasetDir))) ?? []
-      ).filter((dir) => dir !== datasetDir);
-      if (sameLibraries.length > 0) {
-        throw new Error(
-          `has the same libraries as ${sameLibraries.join(", ")}, so none of them were uploaded`,
-        );
-      }
-
       const dataset = await buildDataset(datasetDir, libraryIds);
       const files = await listFiles(datasetDir);
-      const current = existingByLibraries.get(
-        librariesKey(libraryReadableIds(datasetDir)),
+      const current = existingByKey.get(
+        datasetKey(dataset.delivered_at, libraryReadableIds(datasetDir)),
       );
 
       if (current) {
