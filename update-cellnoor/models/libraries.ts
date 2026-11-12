@@ -178,10 +178,16 @@ async function updateLibrary(
     },
   );
 
-  await syncIds(api, { entity: "library", id: library.readable_id }, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/libraries/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/libraries/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "library", id: library.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/libraries/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/libraries/{id}/preparers", { params, body }),
+    },
+  );
 }

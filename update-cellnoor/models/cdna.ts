@@ -197,9 +197,15 @@ async function updateCdna(
     },
   );
 
-  await syncIds(api, { entity: "cdna", id: cdna.readable_id }, cdna.preparers, current.preparers, {
-    add: (body) => api.client.POST("/cdna/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/cdna/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "cdna", id: cdna.readable_id },
+    cdna.preparers,
+    current.preparers,
+    {
+      add: (body) => api.client.POST("/cdna/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/cdna/{id}/preparers", { params, body }),
+    },
+  );
 }

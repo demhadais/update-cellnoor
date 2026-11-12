@@ -137,11 +137,10 @@ async function main() {
 
   await syncChromiumDatasets(api, datasetDirs, libraryIds);
 
-  await Bun.write(`${api.errorsDir}/report.txt`, renderReport(
-      api.problems,
-      config.workbooks,
-      responsiblePeople(chromium),
-    ));
+  await Bun.write(
+    `${api.errorsDir}/report.txt`,
+    renderReport(api.problems, config.workbooks, responsiblePeople(chromium)),
+  );
 }
 
 // A person without an OID is created without a Microsoft account

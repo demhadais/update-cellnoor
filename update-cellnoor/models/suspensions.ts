@@ -207,8 +207,12 @@ export async function syncSuspensions(
     specimens: Map<string, SpecimenReference>;
   },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, "suspension", SuspensionRow, rawRows, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "suspension",
+    SuspensionRow,
+    rawRows,
+    (row) => String(row.readable_id),
   );
   const suspensions = await buildEachWithMeasurements(
     api,
@@ -277,10 +281,16 @@ async function updateSuspension(
     },
   );
 
-  await syncIds(api, { entity: "suspension", id: suspension.readable_id }, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/suspensions/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/suspensions/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "suspension", id: suspension.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/suspensions/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/suspensions/{id}/preparers", { params, body }),
+    },
+  );
 }

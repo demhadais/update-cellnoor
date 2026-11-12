@@ -238,8 +238,12 @@ export async function syncSpecimens(
   rawRows: { specimens: RawRow[]; qcMeasurements: RawRow[] },
   ids: { people: Map<string, string>; projects: Map<string, string> },
 ): Promise<Map<string, SpecimenReference>> {
-  const rows = await parseRows(api, "specimen", SpecimenRow, rawRows.specimens, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "specimen",
+    SpecimenRow,
+    rawRows.specimens,
+    (row) => String(row.readable_id),
   );
   const qcRows = await parseRows(
     api,

@@ -132,8 +132,12 @@ export async function syncSuspensionPools(
   rawRows: { pools: RawRow[]; suspensions: RawRow[] },
   ids: { people: Map<string, string>; suspensions: Map<string, string> },
 ): Promise<Map<string, string>> {
-  const rows = await parseRows(api, "suspension_pool", SuspensionPoolRow, rawRows.pools, (row) =>
-    String(row.readable_id),
+  const rows = await parseRows(
+    api,
+    "suspension_pool",
+    SuspensionPoolRow,
+    rawRows.pools,
+    (row) => String(row.readable_id),
   );
   // Invalid suspension rows are reported when syncing suspensions
   const pooledSuspensions = rawRows.suspensions.flatMap((row) => {
@@ -225,10 +229,16 @@ async function updateSuspensionPool(
     },
   );
 
-  await syncIds(api, { entity: "suspension_pool", id: pool.readable_id }, preparers, current.preparers, {
-    add: (body) =>
-      api.client.POST("/suspension-pools/{id}/preparers", { params, body }),
-    remove: (body) =>
-      api.client.DELETE("/suspension-pools/{id}/preparers", { params, body }),
-  });
+  await syncIds(
+    api,
+    { entity: "suspension_pool", id: pool.readable_id },
+    preparers,
+    current.preparers,
+    {
+      add: (body) =>
+        api.client.POST("/suspension-pools/{id}/preparers", { params, body }),
+      remove: (body) =>
+        api.client.DELETE("/suspension-pools/{id}/preparers", { params, body }),
+    },
+  );
 }
