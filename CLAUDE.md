@@ -73,7 +73,7 @@ A failed `lookup` throws `UnknownReference`. The report omits it when the refere
 
 - Institutions are assigned to people by email domain via the table in `models/institutions.ts`, not by a workbook column. JAX is created by an API migration with the nil UUID and is not synced.
 - People's Microsoft Entra OIDs come from Microsoft Graph (`microsoft-graph-client.ts`), members only — guests are excluded because their OID differs from their home tenant's. If the lookup fails, the error is reported and people are synced without OIDs.
-- Chromium datasets: library readable IDs are parsed from the first `_`-separated segment of the directory name; an existing dataset is matched by its set of library readable IDs. If several directories given on one run name the same set of libraries, each is reported and none is uploaded. `delivered_at` comes from `pipeline-metadata.json` with a hardcoded `-05:00` offset. Only a whitelist of filenames is uploaded, and a file is re-uploaded only when its SHA-256 differs from the API's copy.
+- Chromium datasets: library readable IDs are parsed from the first `_`-separated segment of the directory name; an existing dataset is matched by its `delivered_at` instant together with its set of library readable IDs, so deliveries of the same libraries at different times become separate datasets. `delivered_at` comes from `pipeline-metadata.json` with a hardcoded `-05:00` offset. Only a whitelist of filenames is uploaded, and a file is re-uploaded only when its SHA-256 differs from the API's copy.
 - `config.assay_map` maps the Chromium workbook's assay names to 10x assay fields for chromium runs.
 
 ## Data
