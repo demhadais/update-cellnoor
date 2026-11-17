@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { libraryTypeValues } from "cellnoor/packages/cellnoor-client/cellnoor-types.ts";
 
 const SheetSpecification = z.object({
   name: z.string(),
@@ -48,7 +49,7 @@ const ChromiumWorkbook = z.object({
 
 const AssaySpecification = z.object({
   name: z.string(),
-  library_types: z.array(z.string()),
+  library_types: z.array(z.enum(libraryTypeValues)),
   sample_multiplexing: z.string(),
   chemistry_version: z.string(),
   chromium_chip: z.string(),

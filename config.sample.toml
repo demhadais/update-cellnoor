@@ -185,126 +185,126 @@ qubit_concentration = "Qubit Concentration (ng/µL)"
 
 [assay_map."Single Cell ATAC v2"]
 name = "Epi ATAC"
-library_types = ["chromatin_accessibility"]
+library_types = ["Chromatin Accessibility"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v2"
 chromium_chip = "H"
 
 [assay_map."Single Cell Multiome ATAC + Gene Expression v1"]
 name = "Epi Multiome ATAC + Gene Expression"
-library_types = ["chromatin_accessibility", "gene_expression"]
+library_types = ["Chromatin Accessibility", "Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v1"
 chromium_chip = "J"
 
 [assay_map."Multiplex Flex Gene Expression v1 (GEM-X)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "flex_barcode"
 chemistry_version = "v1 - GEM-X"
 chromium_chip = "GEM-X FX"
 
 [assay_map."Multiplex Flex Gene Expression v2 (GEM-X)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "flex_oligonucleotide_barcode"
 chemistry_version = "v2 - GEM-X"
 chromium_chip = "GEM-X FX"
 
 [assay_map."Singleplex Flex Gene Expression v1 (GEM-X)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v1 - GEM-X"
 chromium_chip = "GEM-X FX"
 
 [assay_map."Singleplex Flex Gene Expression v2 (GEM-X)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v2 - GEM-X"
 chromium_chip = "GEM-X FX"
 
 [assay_map."Multiplex Flex Gene Expression v1 (Next GEM)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "flex_barcode"
 chemistry_version = "v1 - Next GEM"
 chromium_chip = "Q"
 
 [assay_map."Singleplex Flex Gene Expression v1 (Next GEM)"]
 name = "Flex Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v1 - Next GEM"
 chromium_chip = "Q"
 
 [assay_map."Single Cell 3' Gene Expression v4"]
 name = "Universal 3' Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v4 - GEM-X"
 chromium_chip = "GEM-X 3'"
 
 [assay_map."Single Cell 3' Gene Expression OCM v4"]
 name = "Universal 3' Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "on_chip_multiplexing"
 chemistry_version = "v4 - GEM-X"
 chromium_chip = "GEM-X OCM 3'"
 
 [assay_map."Single Cell 5' Gene Expression + V(D)J v3"]
 name = "Universal 5' Gene Expression"
-library_types = ["gene_expression", "vdj"]
+library_types = ["Gene Expression", "VDJ"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v3 - GEM-X"
 chromium_chip = "GEM-X 5'"
 
 [assay_map."Single Cell 5' Gene Expression +  V(D)J OCM v3"]
 name = "Universal 5' Gene Expression"
-library_types = ["gene_expression", "vdj"]
+library_types = ["Gene Expression", "VDJ"]
 sample_multiplexing = "on_chip_multiplexing"
 chemistry_version = "v3 - GEM-X"
 chromium_chip = "GEM-X OCM 5'"
 
 [assay_map."Single Cell 5' Gene Expression + CRISPR Screening v3"]
 name = "Universal 5' Gene Expression"
-library_types = ["crispr_guide_capture", "gene_expression"]
+library_types = ["CRISPR Guide Capture", "Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v3 - GEM-X"
 chromium_chip = "GEM-X 5'"
 
 [assay_map."Single Cell 3' Gene Expression + Cell Surface Protein v4"]
 name = "Universal 3' Gene Expression"
-library_types = ["antibody_capture", "gene_expression"]
+library_types = ["Antibody Capture", "Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v4 - GEM-X"
 chromium_chip = "GEM-X 3'"
 
 [assay_map."Single Cell 3' + Cell Surface Protein OCM v4"]
 name = "Universal 3' Gene Expression"
-library_types = ["antibody_capture", "gene_expression"]
+library_types = ["Antibody Capture", "Gene Expression"]
 sample_multiplexing = "on_chip_multiplexing"
 chemistry_version = "v4 - GEM-X"
 chromium_chip = "GEM-X OCM 3'"
 
 [assay_map."Single Cell 5' Gene Expression v3"]
 name = "Universal 5' Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v3 - GEM-X"
 chromium_chip = "GEM-X 5'"
 
 [assay_map."Single Cell Multiome ATAC + Gene Expression v1 (GEM-X)"]
 name = "Epi Multiome ATAC + Gene Expression"
-library_types = ["chromatin_accessibility", "gene_expression"]
+library_types = ["Chromatin Accessibility", "Gene Expression"]
 sample_multiplexing = "singleplex"
 chemistry_version = "v1"
 chromium_chip = "GEM-X MO"
 
 [assay_map."Single Cell 5' Gene Expression OCM v3"]
 name = "Universal 5' Gene Expression"
-library_types = ["gene_expression"]
+library_types = ["Gene Expression"]
 sample_multiplexing = "on_chip_multiplexing"
 chemistry_version = "v3 - GEM-X"
 chromium_chip = "GEM-X OCM 5'"

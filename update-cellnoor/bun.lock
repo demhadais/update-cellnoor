@@ -6,7 +6,7 @@
       "name": "update-cellnoor",
       "dependencies": {
         "@azure/identity": "^4.14.1",
-        "@microsoft/microsoft-graph-client": "^3.0.7",
+        "@microsoft/microsoft-graph-client": "^3.1.0",
         "cellnoor": "https://github.com/thejacksonlaboratory/cellnoor",
         "openapi-fetch": "^0.17.0",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
@@ -48,7 +48,7 @@
 
     "@babel/runtime": ["@babel/runtime@7.29.14", "", {}, "sha512-Y5tqevQaUAZhhj82BpYMNC1ssvLQTVAfwKdm8iy8qwmhvC2/CpcAu8OC+QEtjM7pMk7knx83u1Qj8gzkicyelw=="],
 
-    "@microsoft/microsoft-graph-client": ["@microsoft/microsoft-graph-client@3.0.7", "", { "dependencies": { "@babel/runtime": "^7.12.5", "tslib": "^2.2.0" }, "peerDependencies": { "@azure/identity": "*", "@azure/msal-browser": "*", "buffer": "*", "stream-browserify": "*" }, "optionalPeers": ["@azure/identity", "@azure/msal-browser", "buffer", "stream-browserify"] }, "sha512-/AazAV/F+HK4LIywF9C+NYHcJo038zEnWkteilcxC1FM/uK/4NVGDKGrxx7nNq1ybspAroRKT4I1FHfxQzxkUw=="],
+    "@microsoft/microsoft-graph-client": ["@microsoft/microsoft-graph-client@3.1.0", "", { "dependencies": { "@babel/runtime": "^7.12.5", "tslib": "^2.2.0" }, "peerDependencies": { "@azure/identity": "*", "@azure/msal-browser": "*", "buffer": "*", "stream-browserify": "*" }, "optionalPeers": ["@azure/identity", "@azure/msal-browser", "buffer", "stream-browserify"] }, "sha512-LdfU+0E8B5EFmBiIM7AdpI/dhFZ+bDJCMnenwVoFl889K2fU5WDx3K0aIolsm36IrGaMkhcMyN3VFpmujzzXcA=="],
 
     "@oven/bun-darwin-aarch64": ["@oven/bun-darwin-aarch64@1.4.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-zW/hxwc8sJAILGwB5eTC4i48ouGXf0V4lrxmEOk3JIE6JkYVW1TZh1E2pIempqsezgW1sckTIIDudFON8bJ2Mw=="],
 
@@ -130,7 +130,7 @@
 
     "bundle-name": ["bundle-name@4.1.1", "", { "dependencies": { "run-applescript": "^7.0.0" } }, "sha512-DdH81/zPLVS11EUgWq3tEu/xn+EzljlMYooDNdzWEnFha3R3NBMpMV1UqYIpjYHV/SgpFKMIX1Oh7o06SjM/oA=="],
 
-    "cellnoor": ["cellnoor@github:thejacksonlaboratory/cellnoor#b5b9a0e", {}, "TheJacksonLaboratory-cellnoor-b5b9a0e", "sha512-S3GKSJc6dDKWVYs0Oku5z7abroDpX9XfNRMJLyOq5pAdwJj9vVvjqAIe+3VbRphMhiNql/RUU2dVWAlIGUCs4A=="],
+    "cellnoor": ["cellnoor@github:thejacksonlaboratory/cellnoor#90c2758", {}, "TheJacksonLaboratory-cellnoor-90c2758", "sha512-pMAu+l2m4HCrWiM4X5qN2SlIRaAf0xxKEYSDnvKCIFVP9ldCBkQ3B4AzmtSXYqMz5Yzp146eQ4yQSTrlwuO3MA=="],
 
     "debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 
