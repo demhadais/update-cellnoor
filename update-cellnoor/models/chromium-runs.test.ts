@@ -248,7 +248,7 @@ describe("assayIds", () => {
       chemistry_version: "v4 - GEM-X",
       chromium_chip: "GEM-X 3'",
       sample_multiplexing: "singleplex" as const,
-      library_types: ["gene_expression" as const, "antibody_capture" as const],
+      library_types: ["Gene Expression" as const, "Antibody Capture" as const],
       protocol_url: "",
     };
 
@@ -257,7 +257,7 @@ describe("assayIds", () => {
         {
           "Single Cell 3' Gene Expression + Cell Surface Protein v4": {
             name: "Universal 3' Gene Expression",
-            library_types: ["antibody_capture", "gene_expression"],
+            library_types: ["Antibody Capture", "Gene Expression"],
             sample_multiplexing: "singleplex",
             chemistry_version: "v4 - GEM-X",
             chromium_chip: "GEM-X 3'",

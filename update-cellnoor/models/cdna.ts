@@ -36,12 +36,12 @@ export type CdnaRow = z.infer<typeof CdnaRow>;
 type NewCdna = Schemas["NewCdna"];
 
 const LIBRARY_TYPES: Record<string, Schemas["LibraryType"]> = {
-  "Antibody Capture": "antibody_capture",
-  "Chromatin Accessibility": "chromatin_accessibility",
-  "CRISPR Guide Capture": "crispr_guide_capture",
-  "Gene Expression": "gene_expression",
-  "Gene Expression Flex": "gene_expression",
-  "VDJ-T": "vdj_t",
+  "Antibody Capture": "Antibody Capture",
+  "Chromatin Accessibility": "Chromatin Accessibility",
+  "CRISPR Guide Capture": "CRISPR Guide Capture",
+  "Gene Expression": "Gene Expression",
+  "Gene Expression Flex": "Gene Expression",
+  "VDJ-T": "VDJ T",
 };
 
 export function electrophoreticMeasurement(
@@ -100,7 +100,7 @@ export function buildCdna(
   const preparers = row.preparers.map((e) => lookup(ids.people, e, "person"));
 
   const libraryTypeFields =
-    libraryType === "gene_expression"
+    libraryType === "Gene Expression"
       ? {
           library_type: libraryType,
           n_amplification_cycles: required(

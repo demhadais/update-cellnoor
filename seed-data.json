@@ -21,7 +21,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "chromatin_accessibility",
+          "library_type": "Chromatin Accessibility",
           "index_kit": "NA",
           "cdna_volume_µl": 40,
           "library_volume_µl": 20
@@ -38,13 +38,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "chromatin_accessibility",
+          "library_type": "Chromatin Accessibility",
           "index_kit": "NA",
           "cdna_volume_µl": 40,
           "library_volume_µl": 20
         },
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -61,13 +61,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "chromatin_accessibility",
+          "library_type": "Chromatin Accessibility",
           "index_kit": "NA",
           "cdna_volume_µl": 40,
           "library_volume_µl": 20
         },
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -84,7 +84,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -101,7 +101,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -118,7 +118,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -135,7 +135,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -152,7 +152,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -169,7 +169,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TS",
           "cdna_volume_µl": 100,
           "library_volume_µl": 40
@@ -186,13 +186,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "antibody_capture",
+          "library_type": "Antibody Capture",
           "index_kit": "NT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
         },
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -209,13 +209,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "antibody_capture",
+          "library_type": "Antibody Capture",
           "index_kit": "NT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
         },
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -232,7 +232,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -249,7 +249,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -266,13 +266,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "crispr_guide_capture",
+          "library_type": "CRISPR Guide Capture",
           "index_kit": "TT",
           "cdna_volume_µl": 50,
           "library_volume_µl": 40
         },
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -289,7 +289,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -306,7 +306,7 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -323,13 +323,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
         },
         {
-          "library_type": "vdj",
+          "library_type": "VDJ",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
@@ -346,13 +346,13 @@
       "platform": "chromium",
       "library_type_specifications": [
         {
-          "library_type": "gene_expression",
+          "library_type": "Gene Expression",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35
         },
         {
-          "library_type": "vdj",
+          "library_type": "VDJ",
           "index_kit": "TT",
           "cdna_volume_µl": 40,
           "library_volume_µl": 35

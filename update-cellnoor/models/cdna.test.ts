@@ -26,7 +26,7 @@ function cdna(overrides: Partial<CdnaRow>): CdnaRow {
 describe("buildCdna", () => {
   test("gene expression cDNA has a number of amplification cycles", () => {
     expect(buildCdna(cdna({}), ids)).toMatchObject({
-      library_type: "gene_expression",
+      library_type: "Gene Expression",
       n_amplification_cycles: 11,
     });
   });
@@ -48,7 +48,7 @@ describe("buildCdna", () => {
       cdna({ library_type: "Chromatin Accessibility" }),
       ids,
     );
-    expect(built.library_type).toBe("chromatin_accessibility");
+    expect(built.library_type).toBe("Chromatin Accessibility");
     expect(built).not.toHaveProperty("n_amplification_cycles");
   });
 
