@@ -1,7 +1,7 @@
 {
   "name": "update-cellnoor",
   "module": "index.ts",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "repository": "github:demhadais/update-cellnoor",
   "author": {
     "name": "Ahmed Said",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@azure/identity": "^4.14.1",
     "@microsoft/microsoft-graph-client": "^3.1.0",
-    "cellnoor": "https://github.com/thejacksonlaboratory/cellnoor",
+    "cellnoor": "github:thejacksonlaboratory/cellnoor",
     "openapi-fetch": "^0.17.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.6.7"
