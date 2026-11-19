@@ -1,4 +1,5 @@
-import { basename } from "path";
+import { basename, dirname } from "path";
+import * as z from "zod";
 import {
   fetchOrThrow,
   reportApiError,
@@ -62,30 +63,67 @@ async function listFiles(datasetDir: string): Promise<DatasetFile[]> {
   return selectFiles(datasetDir, relativePaths.toSorted());
 }
 
-async function getDatasetDeliveryTime(datasetDir: string): Promise<Date> {
-  // Just hardcode UTC-5 (Eastern Standard Time)
-  const deliveredAt = await Bun.file(`${datasetDir}/pipeline-metadata.json`)
-    .text()
-    // This step is necessary because cellranger-arc outputs JSON with `NaN`, causing a parsing failure. We just need to
-    // make the JSON work, and we don't care if we accidentally replace NaN inside a string (which would be valid JSON)
-    .then((rawJson) => rawJson.replaceAll("NaN", "null"))
-    .then(JSON.parse)
-    .then((md) => `${md.metadata_generated_date}${EASTERN_STANDARD_TIME}`);
+const PipelineMetadata = z.object({
+  metadata_generated_date: z.string(),
+  record: z.object({ reference_path: z.string() }),
+});
 
-  return new Date(deliveredAt);
+const Versions = z.object({ pipelines: z.string() });
+
+async function readPipelineMetadata(datasetDir: string) {
+  return (
+    Bun.file(`${datasetDir}/pipeline-metadata.json`)
+      .text()
+      // This step is necessary because cellranger-arc outputs JSON with `NaN`, causing a parsing failure. We just need to
+      // make the JSON work, and we don't care if we accidentally replace NaN inside a string (which would be valid JSON)
+      .then((rawJson) => rawJson.replaceAll("NaN", "null"))
+      .then(JSON.parse)
+      .then((md) => PipelineMetadata.parse(md))
+  );
+}
+
+// `versions.pipelines` is either "10.1.0" or "cellranger-arc-2.0.1"
+export function parsePipeline(cmdline: string, versions: unknown) {
+  const [pipeline_name, pipeline_command] = z
+    .tuple([z.string(), z.string()], z.string())
+    .parse(cmdline.trim().split(/\s+/));
+  const { pipelines } = Versions.parse(versions);
+
+  return {
+    pipeline_name,
+    pipeline_command,
+    pipeline_version: pipelines.slice(pipelines.lastIndexOf("-") + 1),
+  };
+}
+
+async function readPipeline(datasetDir: string) {
+  const [cmdlinePath, ...others] = await Array.fromAsync(
+    new Bun.Glob("*/_files/_cmdline").scan({ cwd: datasetDir, absolute: true }),
+  );
+  if (cmdlinePath === undefined || others.length > 0) {
+    throw new Error(`expected exactly one */_files/_cmdline in ${datasetDir}`);
+  }
+
+  return parsePipeline(
+    await Bun.file(cmdlinePath).text(),
+    await Bun.file(`${dirname(cmdlinePath)}/_versions`).json(),
+  );
 }
 
 async function buildDataset(
   datasetDir: string,
   libraryIds: Map<string, string>,
 ): Promise<NewChromiumDataset> {
-  const delivered_at = await getDatasetDeliveryTime(datasetDir).then((d) =>
-    d.toISOString(),
-  );
+  const metadata = await readPipelineMetadata(datasetDir);
 
   return {
     name: basename(datasetDir),
-    delivered_at,
+    // Just hardcode UTC-5 (Eastern Standard Time)
+    delivered_at: new Date(
+      `${metadata.metadata_generated_date}${EASTERN_STANDARD_TIME}`,
+    ).toISOString(),
+    reference_package_name: basename(metadata.record.reference_path),
+    ...(await readPipeline(datasetDir)),
     library_ids: libraryReadableIds(datasetDir).map((id) =>
       lookup(libraryIds, id, "library"),
     ),

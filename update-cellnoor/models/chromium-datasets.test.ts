@@ -2,9 +2,39 @@ import { describe, expect, test } from "bun:test";
 import {
   libraryReadableIds,
   changedFiles,
+  parsePipeline,
   selectFiles,
   type DatasetFile,
 } from "./chromium-datasets.ts";
+
+describe("parsePipeline", () => {
+  test("takes the name and command from the cmdline, and the version from either form of `pipelines`", () => {
+    expect(
+      parsePipeline("cellranger multi --id=x --csv=config.csv\n", {
+        pipelines: "10.1.0",
+      }),
+    ).toEqual({
+      pipeline_name: "cellranger",
+      pipeline_command: "multi",
+      pipeline_version: "10.1.0",
+    });
+    expect(
+      parsePipeline("cellranger-arc count --id=x", {
+        pipelines: "cellranger-arc-2.0.2",
+      }),
+    ).toEqual({
+      pipeline_name: "cellranger-arc",
+      pipeline_command: "count",
+      pipeline_version: "2.0.2",
+    });
+  });
+
+  test("rejects a cmdline without a command", () => {
+    expect(() =>
+      parsePipeline("cellranger\n", { pipelines: "10.1.0" }),
+    ).toThrow();
+  });
+});
 
 describe("libraryReadableIds", () => {
   test("extracts every library ID before the specimen names", () => {
